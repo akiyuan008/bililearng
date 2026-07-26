@@ -1,0 +1,60 @@
+# Workflow that runs relevant tests with the clang from the Dart SDK.
+
+name: native_toolchain_c
+permissions: read-all
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/native_toolchain_c.yaml"
+      - "pkgs/native_toolchain_c/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/native_toolchain_c.yaml"
+      - "pkgs/native_toolchain_c/**"
+  schedule:
+    - cron: "0 0 * * 0" # weekly
+
+jobs:
+  dart-sdk-clang:
+    strategy:
+      matrix:
+        os: [ubuntu]
+        sdk: [dev, stable]
+        package: [native_toolchain_c]
+
+    runs-on: ${{ matrix.os }}-latest
+
+    defaults:
+      run:
+        working-directory: pkgs/${{ matrix.package }}
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+        with:
+          sdk: ${{ matrix.sdk }}
+
+      - uses: nttld/setup-ndk@ed92fe6cadad69be94a966a7ee3271275e62f779
+        with:
+          ndk-version: r27
+
+      - run: dart pub get
+
+      - name: Install native toolchains
+        run: sudo apt-get update && sudo apt-get install gcc-i686-linux-gnu gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-riscv64-linux-gnu
+
+      - name: Install rust for pkgs/native_toolchain_c/test/clinker/rust_test.dart
+        uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6
+
+      - run: git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      - run: echo "$PWD/depot_tools" >> $GITHUB_PATH
+      - run: mkdir dart-sdk
+      - run: cd dart-sdk && fetch --no-history dart
+      - run: echo "./dart-sdk/sdk/buildtools/linux-x64/clang/bin" >> $GITHUB_PATH
+      - run: clang --version
+
+      - run: dart test

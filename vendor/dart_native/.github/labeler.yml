@@ -1,0 +1,61 @@
+# Configuration for .github/workflows/pull_request_label.yml.
+
+'type-infra':
+  - changed-files:
+    - any-glob-to-any-file: '.github/**'
+
+'package:ffi':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/ffi/**'
+
+'package:ffigen':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/ffigen/**'
+
+'package:jni':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/jni/**'
+
+'package:jni_flutter':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/jni_flutter/**'
+
+'package:jnigen':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/jnigen/**'
+
+'package:code_assets':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/code_assets/**'
+
+'package:data_assets':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/data_assets/**'
+
+'package:hooks':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/hooks/**'
+
+'package:hooks_runner':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/hooks_runner/**'
+
+'package:native_doc_dartifier':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/native_doc_dartifier/**'
+
+'package:native_toolchain_c':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/native_toolchain_c/**'
+
+'package:objective_c':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/objective_c/**'
+
+'package:swift2objc':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/swift2objc/**'
+
+'package:swiftgen':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/swiftgen/**'

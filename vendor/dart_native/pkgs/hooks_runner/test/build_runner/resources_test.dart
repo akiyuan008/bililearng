@@ -1,0 +1,284 @@
+// Copyright (c) 2024, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:data_assets/data_assets.dart';
+import 'package:hooks_runner/hooks_runner.dart';
+import 'package:record_use/record_use.dart';
+import 'package:test/test.dart';
+
+import '../helpers.dart';
+import 'helpers.dart';
+
+const Timeout longTimeout = Timeout(Duration(minutes: 5));
+
+const loadingUnitRoot = LoadingUnit('root');
+
+void main() async {
+  test('simple_link linking', timeout: longTimeout, () async {
+    await inTempDir((tempUri) async {
+      await copyTestProjects(targetUri: tempUri);
+      final packageUri = tempUri.resolve('simple_link/');
+
+      final resourcesUri = tempUri.resolve('treeshaking_info.json');
+      final recordings = Recordings(
+        calls: {},
+        instances: {},
+      );
+      await File.fromUri(
+        resourcesUri,
+      ).writeAsString(jsonEncode(recordings.toJson()));
+
+      // First, run `pub get`, we need pub to resolve our dependencies.
+      await runPubGet(workingDirectory: packageUri, logger: logger);
+
+      final buildResult = (await buildDataAssets(
+        packageUri,
+        linkingEnabled: true,
+      )).success;
+
+      Iterable<String> buildFiles() => Directory.fromUri(
+        packageUri.resolve('.dart_tool/hooks_runner/'),
+      ).listSync(recursive: true).map((file) => file.path);
+
+      expect(buildFiles(), isNot(anyElement(endsWith('recorded_uses.json'))));
+
+      await link(
+        packageUri,
+        logger,
+        dartExecutable,
+        buildResult: buildResult,
+        recordUse: RecordUseConfig(
+          file: resourcesUri,
+          entryPoints: [Uri.file('bin/simple_link.dart')],
+          compiler: 'dart_aot_compiler_v1',
+        ),
+        buildAssetTypes: [.data],
+      );
+      expect(buildFiles(), anyElement(endsWith('recorded_uses.json')));
+    });
+  });
+
+  test('record_use_filtering linking', timeout: longTimeout, () async {
+    await inTempDir((tempUri) async {
+      await copyTestProjects(targetUri: tempUri);
+      final packageUri = tempUri.resolve('pirate_adventure/');
+
+      final resourcesUri = tempUri.resolve('treeshaking_info.json');
+      await File.fromUri(
+        resourcesUri,
+      ).writeAsString(jsonEncode(_pirateAdventureRecordings.toJson()));
+
+      // First, run `pub get`, we need pub to resolve our dependencies.
+      await runPubGet(workingDirectory: packageUri, logger: logger);
+
+      final buildResult = (await buildDataAssets(
+        packageUri,
+        linkingEnabled: true,
+      )).success;
+
+      final linkResult = (await link(
+        packageUri,
+        logger,
+        dartExecutable,
+        buildResult: buildResult,
+        recordUse: RecordUseConfig(
+          file: resourcesUri,
+          entryPoints: [Uri.file('bin/pirate_adventure.dart')],
+          compiler: 'dart_aot_compiler_v1',
+        ),
+        buildAssetTypes: [.data],
+      )).success;
+
+      // Verify outputs
+      final pirateSpeakAssets = linkResult.encodedAssets
+          .where((a) => a.asDataAsset.package == 'pirate_speak')
+          .toList();
+      expect(pirateSpeakAssets, hasLength(1));
+      final pirateSpeakFile = pirateSpeakAssets.first.asDataAsset.file;
+      final pirateSpeakContent = jsonDecode(
+        await File.fromUri(pirateSpeakFile).readAsString(),
+      );
+      expect(
+        pirateSpeakContent,
+        equals({'Hello': 'Ahoy', 'Money': 'Doubloons'}),
+      );
+
+      final pirateTechAssets = linkResult.encodedAssets
+          .where((a) => a.asDataAsset.package == 'pirate_technology')
+          .toList();
+      expect(pirateTechAssets, hasLength(1));
+      final pirateTechFile = pirateTechAssets.first.asDataAsset.file;
+      final pirateTechContent = jsonDecode(
+        await File.fromUri(pirateTechFile).readAsString(),
+      );
+      expect(
+        pirateTechContent,
+        equals({
+          'Cannon': {'range': 100, 'damage': 50},
+        }),
+      );
+    });
+  });
+
+  test('record_use_filtering caching', timeout: longTimeout, () async {
+    await inTempDir((tempUri) async {
+      await copyTestProjects(targetUri: tempUri);
+      final packageUri = tempUri.resolve('pirate_adventure/');
+
+      final resourcesUri = tempUri.resolve('treeshaking_info.json');
+      await File.fromUri(
+        resourcesUri,
+      ).writeAsString(jsonEncode(_pirateAdventureRecordings.toJson()));
+
+      // First, run `pub get`, we need pub to resolve our dependencies.
+      await runPubGet(workingDirectory: packageUri, logger: logger);
+
+      final buildResult = (await buildDataAssets(
+        packageUri,
+        linkingEnabled: true,
+      )).success;
+
+      final logMessages = <String>[];
+      Future<void> runLink(Uri file) async {
+        logMessages.clear();
+        await link(
+          packageUri,
+          logger,
+          dartExecutable,
+          buildResult: buildResult,
+          recordUse: RecordUseConfig(
+            file: file,
+            entryPoints: [Uri.file('bin/pirate_adventure.dart')],
+            compiler: 'dart_aot_compiler_v1',
+          ),
+          buildAssetTypes: [.data],
+          capturedLogs: logMessages,
+        );
+      }
+
+      // Initial run: should run hooks.
+      await runLink(resourcesUri);
+      expect(
+        logMessages.join('\n'),
+        stringContainsInOrder(['pirate_speak', 'hook.dill']),
+      );
+
+      // Second run: should be cached.
+      await runLink(resourcesUri);
+      expect(
+        logMessages.join('\n'),
+        contains('Skipping link for pirate_speak'),
+      );
+
+      // Change file path but keep contents: should be cached.
+      final resourcesUriDifferentPath = tempUri.resolve(
+        'treeshaking_info_different_path.json',
+      );
+      await File.fromUri(resourcesUriDifferentPath).writeAsString(
+        jsonEncode(_pirateAdventureRecordings.toJson()),
+      );
+      await runLink(resourcesUriDifferentPath);
+      expect(
+        logMessages.join('\n'),
+        contains('Skipping link for pirate_speak'),
+      );
+
+      // Change irrelevant recorded uses (unrelated package): should be cached.
+      final irrelevantRecordings = Recordings(
+        calls: {
+          ..._pirateAdventureRecordings.calls,
+          const Method(
+            'dummy',
+            Library('package:dummy/dummy.dart'),
+          ): [
+            const CallWithArguments(
+              loadingUnit: loadingUnitRoot,
+              positionalArguments: [],
+              namedArguments: {},
+            ),
+          ],
+        },
+        instances: {},
+      );
+      await File.fromUri(resourcesUri).writeAsString(
+        jsonEncode(irrelevantRecordings.toJson()),
+      );
+      await runLink(resourcesUri);
+      expect(
+        logMessages.join('\n'),
+        contains('Skipping link for pirate_speak'),
+      );
+
+      // Change relevant recorded uses (this package): should re-run hooks.
+      final newRecordings = Recordings(
+        calls: {
+          ..._pirateAdventureRecordings.calls,
+          const Method(
+            'dummy',
+            Library('package:pirate_speak/src/definitions.dart'),
+          ): [
+            const CallWithArguments(
+              loadingUnit: loadingUnitRoot,
+              positionalArguments: [],
+              namedArguments: {},
+            ),
+          ],
+        },
+        instances: {},
+      );
+      await File.fromUri(
+        resourcesUri,
+      ).writeAsString(jsonEncode(newRecordings.toJson()));
+
+      await runLink(resourcesUri);
+      expect(
+        logMessages.join('\n'),
+        stringContainsInOrder(['pirate_speak', 'hook.dill']),
+      );
+
+      // Run again: should be cached again.
+      await runLink(resourcesUri);
+      expect(
+        logMessages.join('\n'),
+        contains('Skipping link for pirate_speak'),
+      );
+    });
+  });
+}
+
+/// Expected result of the compiler when running from pirate_adventure
+/// bin/pirate_adventure.dart.
+final _pirateAdventureRecordings = Recordings(
+  calls: {
+    const Method(
+      'pirateSpeak',
+      Library('package:pirate_speak/src/definitions.dart'),
+    ): [
+      const CallWithArguments(
+        loadingUnit: loadingUnitRoot,
+        positionalArguments: [StringConstant('Hello')],
+        namedArguments: {},
+      ),
+      const CallWithArguments(
+        loadingUnit: loadingUnitRoot,
+        positionalArguments: [StringConstant('Money')],
+        namedArguments: {},
+      ),
+    ],
+    const Method(
+      'useCannon',
+      Library('package:pirate_technology/src/definitions.dart'),
+    ): [
+      const CallWithArguments(
+        loadingUnit: loadingUnitRoot,
+        positionalArguments: [],
+        namedArguments: {},
+      ),
+    ],
+  },
+  instances: {},
+);

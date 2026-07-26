@@ -1,0 +1,2 @@
+# This package uses dart:ffi.
+test_on: vm

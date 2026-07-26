@@ -1,0 +1,1465 @@
+// Copyright (c) 2023, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:async';
+import 'dart:io';
+import 'dart:isolate';
+
+import 'package:jni/jni.dart';
+import 'package:test/test.dart';
+
+import '../test_util/callback_types.dart';
+import 'bindings/simple_package.dart';
+
+const pi = 3.14159;
+const fpDelta = 0.001;
+const trillion = 1024 * 1024 * 1024 * 1024;
+
+void _runJavaGC() {
+  final managementFactory = JClass.forName(
+    'java/lang/management/ManagementFactory',
+  );
+  final bean = managementFactory
+      .staticMethodId(
+    'getRuntimeMXBean',
+    '()Ljava/lang/management/RuntimeMXBean;',
+  )
+      .call(managementFactory, JObject.type, []);
+  final pid =
+      bean.jClass.instanceMethodId('getPid', '()J').call(bean, jlong.type, []);
+  ProcessResult result;
+  do {
+    result = Process.runSync('jcmd', [pid.toString(), 'GC.run']);
+    sleep(const Duration(milliseconds: 100));
+  } while (result.exitCode != 0);
+}
+
+Future<void> _waitUntil(bool Function() predicate) async {
+  for (var i = 0; i < 8; ++i) {
+    await Future<void>.delayed(Duration(milliseconds: (1 << i) * 100));
+    if (predicate()) {
+      return;
+    }
+  }
+}
+
+void registerTests(String groupName, TestRunnerCallback test) {
+  group(groupName, () {
+    test('static final fields - int', () {
+      expect(Example.ON, equals(1));
+      expect(Example.OFF, equals(0));
+      expect(Example.PI, closeTo(pi, fpDelta));
+      expect(Example.SEMICOLON, equals(';'.codeUnitAt(0)));
+      expect(
+        Example.SEMICOLON_STRING!.toDartString(releaseOriginal: true),
+        equals(';'),
+      );
+    });
+
+    test('Static methods - primitive', () {
+      // same test can be run at a replicated (dart-only) test, check for both
+      // possible values.
+      expect(Example.amount, isIn([1012, 500]));
+      Example.amount = 1012;
+      expect(Example.amount, equals(1012));
+      expect(Example.asterisk, equals('*'.codeUnitAt(0)));
+      expect(C2.CONSTANT, equals(12));
+    });
+
+    test('Static fields & methods - string', () {
+      expect(
+        Example.name!.toDartString(releaseOriginal: true),
+        isIn(['Ragnar Lothbrok', 'Theseus']),
+      );
+      Example.name = 'Theseus'.toJString();
+      expect(
+        Example.name!.toDartString(releaseOriginal: true),
+        equals('Theseus'),
+      );
+    });
+
+    test('Static fields and methods - Object', () {
+      final nested = Example.nestedInstance!;
+      expect(nested.value, isIn([true, false]));
+      nested.value = false;
+      expect(nested.value, isFalse);
+    });
+
+    test('static methods with several arguments', () {
+      expect(Example.addInts(10, 15), equals(25));
+      expect(Example.max4(-1, 15, 30, 12), equals(30));
+      expect(Example.max8(1, 4, 8, 2, 4, 10, 8, 6), equals(10));
+    });
+
+    test('Instance methods (getters & setters)', () {
+      final e = Example();
+      expect(e.number, equals(0));
+      expect(e.isUp, true);
+      expect(e.codename!.toDartString(), equals('achilles'));
+      e.number = 1;
+      e.up = false;
+      e.codename = 'spartan'.toJString();
+      expect(e.isUp, false);
+      expect(e.number, 1);
+      expect(e.codename!.toDartString(), equals('spartan'));
+      e.release();
+    });
+
+    test('Instance methods with several arguments', () {
+      final e = Example();
+      expect(e.add4Longs(1, 2, 3, 4), equals(10));
+      expect(e.add8Longs(1, 1, 2, 2, 3, 3, 12, 24), equals(48));
+      expect(
+        e.add4Longs(trillion, trillion, trillion, trillion),
+        equals(4 * trillion),
+      );
+      expect(
+        e.add8Longs(
+          trillion,
+          -trillion,
+          trillion,
+          -trillion,
+          trillion,
+          -trillion,
+          -trillion,
+          -trillion,
+        ),
+        equals(2 * -trillion),
+      );
+      e.release();
+    });
+
+    test('Misc. instance methods', () {
+      final e = Example();
+      final rand = e.random;
+      expect(rand, isNotNull);
+      final _ = e.randomLong;
+      final id =
+          e.getRandomNumericString(rand)!.toDartString(releaseOriginal: true);
+      expect(int.parse(id), lessThan(10000));
+      e.number = 145;
+      expect(
+        e.self!.self!.self!.self!.number,
+        equals(145),
+      );
+      e.release();
+    });
+
+    test('Regress #2903', () {
+      // Regression test for https://github.com/dart-lang/native/issues/2903
+      final e = Example();
+      expect(e.bool(true), true);
+      expect(e.num(123), 123);
+      e.release();
+    });
+
+    test('Constructors', () {
+      final e0 = Example();
+      expect(e0.number, 0);
+      expect(e0.isUp, true);
+      expect(e0.codename!.toDartString(), equals('achilles'));
+      final e1 = Example.new$1(111);
+      expect(e1.number, equals(111));
+      expect(e1.isUp, true);
+      expect(e1.codename!.toDartString(), 'achilles');
+      final e2 = Example.new$2(122, false);
+      expect(e2.number, equals(122));
+      expect(e2.isUp, false);
+      expect(e2.codename!.toDartString(), 'achilles');
+      final e3 = Example.new$3(133, false, 'spartan'.toJString());
+      expect(e3.number, equals(133));
+      expect(e3.isUp, false);
+      expect(e3.codename!.toDartString(), 'spartan');
+    });
+
+    test('Static (non-final) fields', () {
+      // Other replica test may already have modified this, so assert both
+      // values.
+      expect(Fields.amount, isIn([500, 101]));
+      Fields.amount = 101;
+      expect(Fields.amount, equals(101));
+
+      expect(Fields.asterisk, equals('*'.codeUnitAt(0)));
+
+      expect(
+        Fields.name!.toDartString(),
+        isIn(['Earl Haraldson', 'Ragnar Lothbrok']),
+      );
+
+      Fields.name = 'Ragnar Lothbrok'.toJString();
+      expect(Fields.name!.toDartString(), equals('Ragnar Lothbrok'));
+
+      expect(Fields.pi, closeTo(pi, fpDelta));
+    });
+
+    test('Instance fields', () {
+      final f = Fields();
+      expect(f.trillion, equals(trillion));
+
+      expect(f.isAchillesDead, isFalse);
+      expect(f.bestFighterInGreece!.toDartString(), equals('Achilles'));
+      // "For your glory walks hand-in-hand with your doom." - Thetis.
+      f.isAchillesDead = true;
+      // I don't know much Greek mythology. But Troy was released in 2004,
+      // and 300 was released in 2006, so it's Leonidas I.
+      f.bestFighterInGreece = 'Leonidas I'.toJString();
+      expect(f.isAchillesDead, isTrue);
+      expect(f.bestFighterInGreece!.toDartString(), 'Leonidas I');
+    });
+
+    test('Fields from nested class', () {
+      expect(Fields$Nested().hundred, equals(100));
+      // Hector of Troy may disagree.
+      expect(Fields$Nested.BEST_GOD!.toDartString(), equals('Pallas Athena'));
+    });
+
+    test('static methods arrays', () {
+      final array = Example.arr!;
+      expect(array[0], 1);
+      expect(array[1], 2);
+      expect(array[2], 3);
+      expect(Example.addAll(array), 6);
+      array[0] = 4;
+      expect(Example.addAll(array), 9);
+    });
+
+    test('array of the class', () {
+      final ex1 = Example();
+      final ex2 = Example();
+      ex1.number = 1;
+      ex2.number = 2;
+      final array = JArray.withLength(Example.type, 2);
+      array[0] = ex1;
+      array[1] = ex2;
+      expect(array[0]!.number, 1);
+      expect(array[1]!.number, 2);
+      array.release();
+      ex1.release();
+      ex2.release();
+    });
+
+    test('Check bindings for same-named classes', () {
+      expect(Example().whichExample(), 0);
+      expect(Example$1().whichExample(), 1);
+    });
+
+    test('Unicode char', () {
+      expect(Fields.euroSymbol, equals('\u20AC'.codeUnitAt(0)));
+    });
+
+    group('exception tests', () {
+      void throwsException(void Function() f) {
+        expect(f, throwsA(isA<JThrowable>()));
+      }
+
+      test('Example throw exception', () {
+        throwsException(Example.throwException);
+      });
+
+      test('Exception from method returning Object', () {
+        throwsException(Exceptions.staticObjectMethod);
+        throwsException(Exceptions.staticObjectArrayMethod);
+        final x = Exceptions();
+        throwsException(x.objectMethod);
+        throwsException(x.objectArrayMethod);
+      });
+
+      test('Exception from method returning int', () {
+        throwsException(Exceptions.staticIntMethod);
+        throwsException(Exceptions.staticIntArrayMethod);
+        final x = Exceptions();
+        throwsException(x.intMethod);
+        throwsException(x.intArrayMethod);
+      });
+
+      test('Exception from constructor', () {
+        throwsException(() => Exceptions.new$1(6.8));
+        throwsException(() => Exceptions.new$2(1, 2, 3, 4, 5, 6));
+      });
+
+      test('Exception contains error message & stack trace', () {
+        try {
+          Exceptions.throwLoremIpsum();
+        } on JThrowable catch (e) {
+          expect(e.message, stringContainsInOrder(['Lorem Ipsum']));
+          expect(
+            e.toString(),
+            stringContainsInOrder(['Lorem Ipsum', 'throwLoremIpsum']),
+          );
+          return;
+        }
+        throw AssertionError('No exception was thrown');
+      });
+
+      test('Custom exception handling', () {
+        try {
+          Exceptions.throwMyException();
+        } on JThrowable catch (e) {
+          switch (e) {
+            case _ when e.isA(Exceptions$MyException.type):
+              final myEx = e.as(Exceptions$MyException.type);
+              expect(myEx.errorCode, 123);
+              return;
+            default:
+              fail('Expected Exceptions\$MyException, but got JThrowable: $e');
+          }
+        } catch (e) {
+          fail('Expected JThrowable, but got ${e.runtimeType}: $e');
+        }
+        throw AssertionError('No exception was thrown');
+      });
+    });
+
+    group('generics', () {
+      test('GrandParent constructor', () {
+        using((arena) {
+          final grandParent = GrandParent(
+            'Hello'.toJString()..releasedBy(arena),
+          )..releasedBy(arena);
+          expect(
+            grandParent.value!.toDartString(releaseOriginal: true),
+            'Hello',
+          );
+        });
+      });
+      test('MyStack<T>', () {
+        using((arena) {
+          final stack = MyStack<JString>()..releasedBy(arena);
+          stack.push('Hello'.toJString()..releasedBy(arena));
+          stack.push('World'.toJString()..releasedBy(arena));
+          expect(stack.pop()!.toDartString(releaseOriginal: true), 'World');
+          expect(stack.pop()!.toDartString(releaseOriginal: true), 'Hello');
+        });
+      });
+      test('MyMap<K, V>', () {
+        using((arena) {
+          final map = MyMap<JString, Example>()..releasedBy(arena);
+          final helloExample = Example.new$1(1)..releasedBy(arena);
+          final worldExample = Example.new$1(2)..releasedBy(arena);
+          map.put('Hello'.toJString()..releasedBy(arena), helloExample);
+          map.put('World'.toJString()..releasedBy(arena), worldExample);
+          expect(
+            (map.get(
+              'Hello'.toJString()..releasedBy(arena),
+            )!
+                  ..releasedBy(arena))
+                .number,
+            1,
+          );
+          expect(
+            (map.get(
+              'World'.toJString()..releasedBy(arena),
+            )!
+                  ..releasedBy(arena))
+                .number,
+            2,
+          );
+          expect(
+            ((map.entryStack()!..releasedBy(arena)).pop()!..releasedBy(arena))
+                .key!
+                .as(JString.type, releaseOriginal: true)
+                .toDartString(releaseOriginal: true),
+            anyOf('Hello', 'World'),
+          );
+        });
+      });
+      test('GenericConstructor', () {
+        using((arena) {
+          final array = JArray.withLength(JString.type, 1)..releasedBy(arena);
+          array[0] = 'Hello'.toJString()..releasedBy(arena);
+          final gc = GenericConstructor.create<JInteger, JString>(array)
+            ..releasedBy(arena);
+          expect(gc, isNotNull);
+          expect(gc.isInstanceOf(GenericConstructor.type.jClass), isTrue);
+          final capturedArray = gc.field!.as(JArray.type(JString.type))
+            ..releasedBy(arena);
+          expect(capturedArray.length, 1);
+          expect(capturedArray[0].toDartString(releaseOriginal: true), 'Hello');
+
+          final number = 123.toJInteger()..releasedBy(arena);
+          final result = gc.identity(number)!..releasedBy(arena);
+          expect(result.isInstanceOf(JInteger.type.jClass), isTrue);
+          expect(result.toDartInt(), 123);
+        });
+      });
+      group('classes extending generics', () {
+        test('StringStack', () {
+          using((arena) {
+            final stringStack = StringStack()..releasedBy(arena);
+            stringStack.push('Hello'.toJString()..releasedBy(arena));
+            expect(
+              stringStack.pop()!.toDartString(releaseOriginal: true),
+              'Hello',
+            );
+          });
+        });
+        test('StringKeyedMap', () {
+          using((arena) {
+            final map = StringKeyedMap<Example>()..releasedBy(arena);
+            final example = Example()..releasedBy(arena);
+            map.put('Hello'.toJString()..releasedBy(arena), example);
+            expect(
+              (map.get(
+                'Hello'.toJString()..releasedBy(arena),
+              )!
+                    ..releasedBy(arena))
+                  .number,
+              0,
+            );
+          });
+        });
+        test('StringValuedMap', () {
+          using((arena) {
+            final map = StringValuedMap<Example>()..releasedBy(arena);
+            final example = Example()..releasedBy(arena);
+            map.put(example, 'Hello'.toJString()..releasedBy(arena));
+            expect(
+              map.get(example)!.toDartString(releaseOriginal: true),
+              'Hello',
+            );
+          });
+        });
+        test('StringMap', () {
+          using((arena) {
+            final map = StringMap()..releasedBy(arena);
+            map.put(
+              'hello'.toJString()..releasedBy(arena),
+              'world'.toJString()..releasedBy(arena),
+            );
+            expect(
+              map
+                  .get('hello'.toJString()..releasedBy(arena))!
+                  .toDartString(releaseOriginal: true),
+              'world',
+            );
+          });
+        });
+      });
+      test('nested generics', () {
+        using((arena) {
+          final grandParent = GrandParent<JString>(
+            '!'.toJString()..releasedBy(arena),
+          )..releasedBy(arena);
+          expect(grandParent.value!.toDartString(releaseOriginal: true), '!');
+
+          final strStaticParent = GrandParent.stringStaticParent()!
+            ..releasedBy(arena);
+          expect(
+            strStaticParent.value!.toDartString(releaseOriginal: true),
+            'Hello',
+          );
+
+          final exampleStaticParent = GrandParent.varStaticParent(
+            Example()..releasedBy(arena),
+          )!
+            ..releasedBy(arena);
+          expect(
+            (exampleStaticParent.value!..releasedBy(arena)).number,
+            0,
+          );
+
+          final strParent = grandParent.stringParent()!..releasedBy(arena);
+          expect(
+            strParent.parentValue!
+                .as(JString.type, releaseOriginal: true)
+                .toDartString(releaseOriginal: true),
+            '!',
+          );
+          expect(strParent.value!.toDartString(releaseOriginal: true), 'Hello');
+
+          final exampleParent = grandParent.varParent(
+            Example()..releasedBy(arena),
+          )!
+            ..releasedBy(arena);
+          expect(
+            exampleParent.parentValue!
+                .as(JString.type, releaseOriginal: true)
+                .toDartString(releaseOriginal: true),
+            '!',
+          );
+          expect((exampleParent.value!..releasedBy(arena)).number, 0);
+          // TODO(#139): test constructing Child, currently does not work due
+          // to a problem with C-bindings.
+        });
+      });
+    });
+    test('Constructing non-static nested classes', () {
+      using((arena) {
+        final grandParent = GrandParent(1.toJInteger())..releasedBy(arena);
+        final parent = GrandParent$Parent(
+          grandParent,
+          2.toJInteger(),
+        )..releasedBy(arena);
+        final child = GrandParent$Parent$Child(
+          parent,
+          3.toJInteger(),
+        )..releasedBy(arena);
+        expect(grandParent.value!.toDartInt(releaseOriginal: true), 1);
+        expect(parent.parentValue!.toDartInt(releaseOriginal: true), 1);
+        expect(parent.value!.toDartInt(releaseOriginal: true), 2);
+        expect(child.grandParentValue!.toDartInt(releaseOriginal: true), 1);
+        expect(child.parentValue!.toDartInt(releaseOriginal: true), 2);
+        expect(child.value!.toDartInt(releaseOriginal: true), 3);
+      });
+    });
+
+    group('interface implementation', () {
+      for (final (threading, consume) in [
+        ('another thread', MyInterfaceConsumer.consumeOnAnotherThread),
+        ('the same thread', MyInterfaceConsumer.consumeOnSameThread),
+      ]) {
+        test('MyInterface.implement on $threading', () async {
+          final voidCallbackResult = Completer<JString>();
+          final varCallbackResult = Completer<JInteger>();
+          final manyPrimitivesResult = Completer<int>();
+          // We can use this trick to access self, instead of generating a
+          // `thiz` or `self` argument for each one of the callbacks.
+          late final MyInterface<JInteger> myInterface;
+          myInterface = MyInterface.implement(
+            $MyInterface(
+              voidCallback: voidCallbackResult.complete,
+              stringCallback: (s) {
+                return (s!.toDartString(releaseOriginal: true) * 2).toJString();
+              },
+              varCallback: (JInteger? t) {
+                final result =
+                    (t!.toDartInt(releaseOriginal: true) * 2).toJInteger();
+                varCallbackResult.complete(result);
+                return result;
+              },
+              manyPrimitives: (a, b, c, d) {
+                if (b) {
+                  final result = a + c + d.toInt();
+                  manyPrimitivesResult.complete(result);
+                  return result;
+                } else {
+                  // Call self, add to [a] when [b] is false and change b to
+                  // true.
+                  return myInterface.manyPrimitives(a + 1, true, c, d);
+                }
+              },
+            ),
+          );
+          // [stringCallback] is going to be called first using [s].
+          // The result of it is going to be used as the argument for
+          // [voidCallback].
+          // The other two methods will be called individually using the passed
+          // arguments afterwards.
+          consume(
+            myInterface,
+            // For stringCallback:
+            'hello'.toJString(),
+            // For manyPrimitives:
+            -1,
+            false,
+            3,
+            3.14,
+            // For varCallback
+            7.toJInteger(),
+          );
+          final voidCallback = await voidCallbackResult.future;
+          expect(
+              voidCallback.toDartString(releaseOriginal: true), 'hellohello');
+
+          final varCallback = await varCallbackResult.future;
+          expect(varCallback.intValue(), 14);
+
+          final manyPrimitives = await manyPrimitivesResult.future;
+          expect(manyPrimitives, -1 + 3 + 3.14.toInt() + 1);
+
+          // Running garbage collection does not work on Android. Skipping this
+          // test on Android.
+          // Currently we have one implementation of the interface.
+          expect(MyInterface.$impls, hasLength(1), skip: Platform.isAndroid);
+          myInterface.release();
+          if (!Platform.isAndroid) {
+            _runJavaGC();
+            await _waitUntil(() => MyInterface.$impls.isEmpty);
+            expect(MyInterface.$impls, isEmpty);
+          }
+        });
+        test('implementing multiple interfaces', () async {
+          final implementer = JImplementer();
+          MyInterface.implementIn(
+            implementer,
+            $MyInterface<JString>(
+              voidCallback: (s) {},
+              stringCallback: (s) {
+                return s;
+              },
+              varCallback: (t) {
+                return t;
+              },
+              manyPrimitives: (a, b, c, d) => 42,
+            ),
+          );
+          var runnableRan = false;
+          MyRunnable.implementIn(
+            implementer,
+            $MyRunnable(
+              run: () {
+                runnableRan = true;
+              },
+            ),
+          );
+          final runnable = implementer.implement<MyRunnable>();
+          runnable.run();
+          expect(runnableRan, isTrue);
+          final myInterface = runnable.as(
+            MyInterface.type,
+            releaseOriginal: true,
+          );
+          expect(myInterface.manyPrimitives(1, true, 3, 4), 42);
+
+          // Running garbage collection does not work on Android. Skipping this
+          // test on Android.
+          expect(MyInterface.$impls, hasLength(1), skip: Platform.isAndroid);
+          expect(MyRunnable.$impls, hasLength(1), skip: Platform.isAndroid);
+          myInterface.release();
+          if (!Platform.isAndroid) {
+            _runJavaGC();
+            await _waitUntil(() => MyInterface.$impls.isEmpty);
+            // Since the interface is now deleted, the cleaner must signal to
+            // Dart to clean up.
+            expect(MyInterface.$impls, isEmpty);
+            expect(MyRunnable.$impls, isEmpty);
+          }
+        });
+        test('Reuse implementation for multiple instances', () {
+          using((arena) {
+            final hexParser = StringConverter.implement(
+              DartStringToIntParser(radix: 16),
+            )..releasedBy(arena);
+            final decimalParser = StringConverter.implement(
+              DartStringToIntParser(radix: 10),
+            )..releasedBy(arena);
+            final fifteen = StringConverterConsumer.consumeOnSameThread(
+              hexParser,
+              'F'.toJString()..releasedBy(arena),
+            )!;
+            expect(fifteen.toDartInt(releaseOriginal: true), 15);
+            final fortyTwo = StringConverterConsumer.consumeOnSameThread(
+              decimalParser,
+              '42'.toJString()..releasedBy(arena),
+            )!;
+            expect(fortyTwo.toDartInt(releaseOriginal: true), 42);
+          });
+        });
+        for (final style in ['callback', 'implemented class']) {
+          test('Listener callbacks - $style style', () async {
+            final completer = Completer<void>();
+
+            final MyRunnable runnable;
+            if (style == 'callback') {
+              runnable = MyRunnable.implement(
+                $MyRunnable(run: completer.complete, run$async: true),
+              );
+            } else {
+              runnable = MyRunnable.implement(AsyncRunnable(completer));
+            }
+            final runner = MyRunnableRunner(runnable);
+            // Normally this would cause a deadlock, but as the callback is a
+            // listener, it will work.
+            runner.runOnAnotherThreadAndJoin();
+            await completer.future;
+            // Running garbage collection does not work on Android. Skipping
+            // this test on Android.
+            expect(MyRunnable.$impls, hasLength(1), skip: Platform.isAndroid);
+            runnable.release();
+            runner.release();
+            if (!Platform.isAndroid) {
+              _runJavaGC();
+              await _waitUntil(() => MyInterface.$impls.isEmpty);
+              // Since the interface is now deleted, the cleaner must signal to
+              // Dart to clean up.
+              expect(MyRunnable.$impls, isEmpty);
+            }
+          });
+        }
+        test('Object methods work', () async {
+          final runnable = MyRunnable.implement($MyRunnable(run: () {}));
+          expect(runnable == runnable, true);
+          expect(runnable != runnable, false);
+          expect(runnable.hashCode, runnable.hashCode);
+          expect(runnable.toString(), runnable.toString());
+          // Running garbage collection does not work on Android. Skipping
+          // this test on Android.
+          expect(MyRunnable.$impls, hasLength(1), skip: Platform.isAndroid);
+          runnable.release();
+          if (!Platform.isAndroid) {
+            _runJavaGC();
+            await _waitUntil(() => MyInterface.$impls.isEmpty);
+            expect(MyRunnable.$impls, isEmpty);
+          }
+        });
+      }
+      group('Dart exceptions are handled', () {
+        for (final exception in [UnimplementedError(), 'Hello!']) {
+          for (final sameThread in [true, false]) {
+            test(
+                'on ${sameThread ? 'the same thread' : 'another thread'}'
+                ' throwing $exception', () async {
+              await using((arena) async {
+                final runnable = MyRunnable.implement(
+                  $MyRunnable(
+                    run: () {
+                      // ignore: only_throw_errors
+                      throw exception;
+                    },
+                  ),
+                )..releasedBy(arena);
+                final runner = MyRunnableRunner(runnable)..releasedBy(arena);
+                if (sameThread) {
+                  runner.runOnSameThread();
+                } else {
+                  runner.runOnAnotherThread();
+                }
+                while (runner.error == null) {
+                  await Future<void>.delayed(const Duration(milliseconds: 100));
+                }
+                expect(
+                  runner.error!.isInstanceOf(
+                    JClass.forName(
+                      'java/lang/reflect/UndeclaredThrowableException',
+                    ),
+                  ),
+                  isTrue,
+                );
+                final throwableClass = runner.error!.jClass;
+                final cause = throwableClass
+                    .instanceMethodId('getCause', '()Ljava/lang/Throwable;')
+                    .call(runner.error!, JObject.type, []);
+                expect(
+                  cause.isInstanceOf(
+                    JClass.forName(
+                      'com/github/dart_lang/jni/PortProxyBuilder\$DartException',
+                    ),
+                  ),
+                  isTrue,
+                );
+                expect(cause.toString(), contains(exception.toString()));
+              });
+              if (!Platform.isAndroid) {
+                _runJavaGC();
+              }
+            });
+          }
+        }
+      });
+
+      group('throw Java exceptions', () {
+        for (final (
+              threading,
+              JObject? Function(StringConverter?, JString?) consume
+            ) in [
+          (
+            'another thread',
+            StringConverterConsumer.consumeOnAnotherThread as JObject? Function(
+                StringConverter?, JString?)
+          ),
+          (
+            'the same thread',
+            StringConverterConsumer.consumeOnSameThread as JObject? Function(
+                StringConverter?, JString?)
+          ),
+        ]) {
+          test('StringConverter.implement on $threading ', () async {
+            final stringConverter = StringConverter.implement(
+              $StringConverter(
+                parseToInt: (s) {
+                  final value = int.tryParse(s!.toDartString());
+                  if (value == null) {
+                    // ignore: only_throw_errors
+                    throw StringConversionException(
+                      'Invalid integer expression: $s'.toJString(),
+                    );
+                  }
+
+                  return value;
+                },
+              ),
+            );
+
+            // Gets the result of a Java Future.
+            // TODO(#1213): remove this once we support Java futures.
+            Future<$T> toDartFuture<$T extends JObject>(
+              JObject future,
+              JType<$T> T,
+            ) async {
+              final receivePort = ReceivePort();
+              await Isolate.spawn((sendPort) {
+                final futureClass =
+                    JClass.forName('java/util/concurrent/Future');
+                final getMethod = futureClass.instanceMethodId(
+                  'get',
+                  '()Ljava/lang/Object;',
+                );
+                final result = getMethod(future, T, []);
+                // A workaround for `--pause-isolates-on-exit`. Otherwise
+                // getting test with coverage pauses indefinitely here.
+                // https://github.com/dart-lang/coverage/issues/472
+                Isolate.current.kill();
+                sendPort.send(result);
+              }, receivePort.sendPort);
+              return (await receivePort.first) as $T;
+            }
+
+            final sevenHundredBoxed = consume(
+              stringConverter,
+              '700'.toJString(),
+            )!;
+            final int sevenHundred;
+            if (sevenHundredBoxed.isA(JInteger.type)) {
+              sevenHundred = (sevenHundredBoxed as JInteger).intValue();
+            } else {
+              sevenHundred = (await toDartFuture(
+                sevenHundredBoxed,
+                JInteger.type,
+              ))
+                  .intValue();
+            }
+            expect(sevenHundred, 700);
+
+            final fooBoxed = consume(stringConverter, 'foo'.toJString())!;
+            final int foo;
+            if (fooBoxed.isA(JInteger.type)) {
+              foo = (fooBoxed as JInteger).intValue();
+            } else {
+              foo = (await toDartFuture(fooBoxed, JInteger.type)).intValue();
+            }
+            expect(foo, -1);
+
+            stringConverter.release();
+          });
+        }
+      });
+      test('Generic interface', () {
+        using((arena) {
+          final genericInterface = GenericInterface.implement(
+            $GenericInterface(
+              arrayOf: (JObject? element) =>
+                  JArray.withLength(JString.type, 1)..[0] = element!,
+              firstKeyOf: (JMap? map) => map!.asDart().keys.first! as JString,
+              firstValueOf: (JMap? map) => map!.asDart().values.first,
+              firstOfArray: (JArray? array) => array!.asDart()[0]! as JString,
+              firstOfGenericArray: (JArray? array) => array!.asDart()[0],
+              genericArrayOf: (JObject? element) =>
+                  JArray.withLength(JObject.type, 1)..[0] = element,
+              mapOf: (JObject? key, JObject? value) => {key: value}.toJMap(),
+            ),
+          )..releasedBy(arena);
+          final stringArray = genericInterface.arrayOf(
+            'hello'.toJString()..releasedBy(arena),
+          )!
+            ..releasedBy(arena);
+          expect(stringArray.asDart(), hasLength(1));
+          expect(stringArray[0]!.toDartString(releaseOriginal: true), 'hello');
+          expect(
+            genericInterface
+                .firstOfArray(stringArray)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+
+          final intArray = genericInterface.genericArrayOf(
+            42.toJInteger()..releasedBy(arena),
+          )!
+            ..releasedBy(arena);
+          expect(
+            genericInterface
+                .firstOfGenericArray(intArray)!
+                .toDartInt(releaseOriginal: true),
+            42,
+          );
+
+          final jmap = genericInterface.mapOf(
+            'hello'.toJString()..releasedBy(arena),
+            42.toJInteger()..releasedBy(arena),
+          )!
+            ..releasedBy(arena);
+          expect(
+            jmap.asDart()['hello'.toJString()..releasedBy(arena)]!.toDartInt(
+                  releaseOriginal: true,
+                ),
+            42,
+          );
+          expect(
+            genericInterface
+                .firstKeyOf(jmap)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            genericInterface
+                .firstValueOf(jmap)!
+                .toDartInt(releaseOriginal: true),
+            42,
+          );
+        });
+      });
+      test('Superinterface methods are available', () {
+        final parent = $R2250(
+          foo: (JString? _) => 42,
+        );
+        expect(parent.foo(null), 42);
+
+        final child = $R2250$Child(
+          foo: (JObject? _) => 24,
+        );
+        expect(child.foo(null), 24);
+      });
+    });
+
+    group('Nullablity annotations', () {
+      Annotated<JString?, JString, JString> newTestObject(Arena arena) {
+        return Annotated(
+          null,
+          'hello'.toJString()..releasedBy(arena),
+          'world'.toJString()..releasedBy(arena),
+        )..releasedBy(arena);
+      }
+
+      Annotated<JString, JString, JString> newNonNullTestObject(Arena arena) {
+        return Annotated(
+          'hello'.toJString()..releasedBy(arena),
+          'hello'.toJString()..releasedBy(arena),
+          'world'.toJString()..releasedBy(arena),
+        )..releasedBy(arena);
+      }
+
+      test('Field access', () {
+        using((arena) {
+          final annotated = newTestObject(arena);
+          expect(annotated.t, isNull);
+          expect(annotated.u.toDartString(releaseOriginal: true), 'hello');
+          expect(annotated.w.toDartString(releaseOriginal: true), 'world');
+        });
+      });
+
+      test('Field setting', () {
+        using((arena) {
+          final annotated = newTestObject(arena);
+          annotated.t = 'hello'.toJString()..releasedBy(arena);
+          expect(
+            annotated.t!
+                .as(JString.type, releaseOriginal: true)
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+        });
+      });
+
+      test('Static methods', () {
+        expect(
+          Annotated.staticHello().toDartString(releaseOriginal: true),
+          'hello',
+        );
+      });
+
+      test('Methods with no object args', () {
+        using((arena) {
+          final annotated = newTestObject(arena);
+          expect(
+              annotated.hello().toDartString(releaseOriginal: true), 'hello');
+          expect(annotated.nullableHello(true), isNull);
+          expect(
+            annotated.nullableHello(false)!.toDartString(releaseOriginal: true),
+            'hello',
+          );
+        });
+      });
+
+      test('Methods returning arrays', () {
+        using((arena) {
+          final annotated = newTestObject(arena);
+          expect(
+            (annotated.array()..releasedBy(arena))[0].toDartString(
+              releaseOriginal: true,
+            ),
+            'hello',
+          );
+          expect((annotated.arrayOfNullable()..releasedBy(arena))[0], isNull);
+          expect(annotated.nullableArray(true), isNull);
+          expect(
+            (annotated.nullableArray(
+              false,
+            )!
+                  ..releasedBy(arena))[0]
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(annotated.nullableArrayOfNullable(true), isNull);
+          expect(
+            (annotated.nullableArrayOfNullable(false)!..releasedBy(arena))[0],
+            isNull,
+          );
+        });
+      });
+
+      test('Methods returning lists', () {
+        using((arena) {
+          final annotated = newTestObject(arena);
+          expect(
+            (annotated.list()..releasedBy(arena)).asDart()[0].toDartString(
+                  releaseOriginal: true,
+                ),
+            'hello',
+          );
+          expect((annotated.listOfNullable()..releasedBy(arena)).asDart()[0],
+              isNull);
+          expect(annotated.nullableList(true), isNull);
+          expect(
+            (annotated.nullableList(
+              false,
+            )!
+                  ..releasedBy(arena))
+                .asDart()[0]
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(annotated.nullableListOfNullable(true), isNull);
+          expect(
+            (annotated.nullableListOfNullable(false)!..releasedBy(arena))
+                .asDart()[0],
+            isNull,
+          );
+        });
+      });
+
+      test('Methods with one object arg', () {
+        using((arena) {
+          final annotated = newTestObject(arena);
+          final object = 'hello'.toJString()..releasedBy(arena);
+          expect(
+            annotated.echo(object).toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated.nullableEcho(object)!.toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(annotated.nullableEcho(null), isNull);
+        });
+      });
+
+      test('Class generic methods with one object arg', () {
+        using((arena) {
+          final annotatedNullableT = newTestObject(arena);
+          final object = 'hello'.toJString()..releasedBy(arena);
+          expect(
+            annotatedNullableT
+                .classGenericEcho(object)! // Cannot make it non-nullable.
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotatedNullableT
+                .nullableClassGenericEcho(object)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(annotatedNullableT.nullableClassGenericEcho(null), isNull);
+
+          final annotatedNonNullableT = newNonNullTestObject(arena);
+          expect(
+            annotatedNonNullableT
+                .classGenericEcho(object)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotatedNonNullableT
+                .nullableClassGenericEcho(object)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(annotatedNonNullableT.nullableClassGenericEcho(null), isNull);
+        });
+      });
+
+      test('Method generic methods with one object arg', () {
+        using((arena) {
+          final annotated = newTestObject(arena);
+          final object = 'hello'.toJString()..releasedBy(arena);
+          expect(
+            annotated
+                .methodGenericEcho(object)!
+                // Cannot make it non-nullable.
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                .methodGenericEcho(object)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                .methodGenericEcho2(object)
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                .methodGenericEcho3(object)
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                // Requires `V`.
+                .nullableReturnMethodGenericEcho(object, false)!
+                // Cannot make it non-nullable.
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                // Requires `V`.
+                .nullableReturnMethodGenericEcho(object, true),
+            isNull,
+          );
+          expect(
+            annotated
+                // `V` is optional.
+                .nullableReturnMethodGenericEcho2(object, false)!
+                // Cannot make it non-nullable.
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                // `V` is optional.
+                .nullableReturnMethodGenericEcho2(object, true),
+            isNull,
+          );
+          expect(
+            annotated.nullableMethodGenericEcho<JObject>(null),
+            isNull,
+          );
+          expect(
+            annotated
+                .nullableMethodGenericEcho(object)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                .nullableMethodGenericEcho(object)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated.noAnnotationMethodGenericEcho<JObject>(null),
+            isNull,
+          );
+          expect(
+            annotated
+                .noAnnotationMethodGenericEcho(object)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                // With no annotations, specifying a non-nullable type still
+                // requires `!`.
+                .noAnnotationMethodGenericEcho(object)!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            annotated
+                .nullableArgMethodGenericEcho(object)
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(
+            () => annotated.nullableArgMethodGenericEcho<JString>(null),
+            throwsA(isA<JThrowable>()),
+          );
+          expect(
+            annotated
+                .nullableArgMethodGenericEcho<JString>(object)
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+        });
+      });
+
+      test('Class generic list methods', () {
+        using((arena) {
+          final annotated = newNonNullTestObject(arena);
+          expect(
+            (annotated.classGenericList()..releasedBy(arena))
+                .asDart()
+                .first!
+                .toDartString(
+                  releaseOriginal: true,
+                ),
+            'hello',
+          );
+          expect(
+            (annotated.classGenericListOfNullable()..releasedBy(arena))
+                .asDart()
+                .first,
+            isNull,
+          );
+          expect(annotated.nullableClassGenericList(true), isNull);
+          expect(
+            (annotated.nullableClassGenericList(
+              false,
+            )!
+                  ..releasedBy(arena))
+                .asDart()
+                .first!
+                .toDartString(releaseOriginal: true),
+            'hello',
+          );
+          expect(annotated.nullableClassGenericListOfNullable(true), isNull);
+          expect(
+            (annotated.nullableClassGenericListOfNullable(
+              false,
+            )!
+                  ..releasedBy(arena))
+                .asDart()
+                .first,
+            isNull,
+          );
+        });
+      });
+    });
+
+    group('Enums', () {
+      test('Color', () {
+        using((arena) {
+          final red = Colors.red..releasedBy(arena);
+          final green = Colors.green..releasedBy(arena);
+          final blue = Colors.blue..releasedBy(arena);
+          expect(red.code, 0xFF0000);
+          expect(green.code, 0x00FF00);
+          expect(blue.code, 0x0000FF);
+          expect(
+            red.toRGB()!..releasedBy(arena),
+            Colors$RGB(255, 0, 0)..releasedBy(arena),
+          );
+          expect(
+            green.toRGB()!..releasedBy(arena),
+            Colors$RGB(0, 255, 0)..releasedBy(arena),
+          );
+          expect(
+            blue.toRGB()!..releasedBy(arena),
+            Colors$RGB(0, 0, 255)..releasedBy(arena),
+          );
+        });
+      });
+    });
+
+    group('Inheritance', () {
+      test('methods', () {
+        using((arena) {
+          final base = BaseClass<JString>()..releasedBy(arena);
+          final derived = SpecificDerivedClass()..releasedBy(arena);
+
+          expect(
+              base
+                  .someMethod('Foo'.toJString()..releasedBy(arena))
+                  ?.toDartString(releaseOriginal: true),
+              'Foo');
+          expect(
+              derived
+                  .someMethod('Bar'.toJString()..releasedBy(arena))
+                  ?.toDartString(releaseOriginal: true),
+              'Hello Bar');
+        });
+      });
+      test('Child implements BaseClass and BaseInterface', () {
+        using((arena) {
+          final child = Child()..releasedBy(arena);
+          expect(child.foo()!.toDartString(releaseOriginal: true), 'foo');
+          expect(
+            child
+                .someMethod$1('bar'.toJString()..releasedBy(arena))
+                ?.toDartString(releaseOriginal: true),
+            'bar',
+          );
+
+          // Verify it can be assigned to BaseInterface.
+          final BaseInterface interface = child;
+          expect(interface.foo()!.toDartString(releaseOriginal: true), 'foo');
+
+          // Verify it can be assigned to BaseClass.
+          final BaseClass<JString?> base = child;
+          expect(
+            base
+                .someMethod('baz'.toJString()..releasedBy(arena))
+                ?.toDartString(releaseOriginal: true),
+            'baz',
+          );
+        });
+      });
+      test('DerivedInterface implements BaseGenericInterface and BaseInterface',
+          () {
+        using((arena) {
+          final derived = DerivedInterface.implement(
+            $DerivedInterface(
+              foo: () => 'derived_foo'.toJString()..releasedBy(arena),
+              someMethod: (s) => s,
+            ),
+          )..releasedBy(arena);
+
+          expect(derived.foo()?.toDartString(releaseOriginal: true),
+              'derived_foo');
+
+          // Verify it can be assigned to BaseGenericInterface.
+          // Skip this on Android due to
+          // https://github.com/dart-lang/native/issues/3212
+          final BaseGenericInterface<JString?> baseGeneric = derived;
+          expect(baseGeneric.foo()?.toDartString(releaseOriginal: true),
+              'derived_foo',
+              skip: Platform.isAndroid);
+
+          // Verify it can be assigned to BaseInterface.
+          final BaseInterface base = derived;
+          expect(
+              base.foo()?.toDartString(releaseOriginal: true), 'derived_foo');
+        });
+      });
+      test('ShibaInu complicated inheritance', () {
+        using((arena) {
+          final shiba = ShibaInu()..releasedBy(arena);
+          expect(shiba.bark().toDartString(releaseOriginal: true), 'Woof!');
+          expect(shiba.groom().toDartString(releaseOriginal: true),
+              'Grooming Shiba');
+          expect(
+              shiba
+                  .eat('bones'.toJString()..releasedBy(arena))
+                  .toDartString(releaseOriginal: true),
+              'Shiba eating bones');
+          expect(shiba.walk(42), 42);
+          expect(shiba.giveBirth(true)?.toDartString(releaseOriginal: true),
+              'Baby Shiba');
+          expect(shiba.giveBirth(false), isNull);
+
+          // Test assignments (diamonds)
+          final Dog dog = shiba;
+          expect(dog.bark().toDartString(releaseOriginal: true), 'Woof!');
+
+          final Mammal mammal = dog;
+          expect(mammal.giveBirth(true)?.toDartString(releaseOriginal: true),
+              'Baby Shiba');
+
+          final FourLegged fourLegged = dog;
+          expect(fourLegged.walk(10), 10);
+
+          final Animal animalFromMammal = mammal;
+          expect(
+              animalFromMammal
+                  .eat('meat'.toJString()..releasedBy(arena))
+                  .toDartString(releaseOriginal: true),
+              'Shiba eating meat');
+
+          final Animal animalFromFourLegged = fourLegged;
+          expect(
+              animalFromFourLegged
+                  .eat('fish'.toJString()..releasedBy(arena))
+                  .toDartString(releaseOriginal: true),
+              'Shiba eating fish');
+
+          final Furry furry = shiba;
+          expect(furry.groom().toDartString(releaseOriginal: true),
+              'Grooming Shiba');
+        });
+      });
+    });
+
+    group('$groupName (load tests)', () {
+      const k4 = 4 * 1024; // This is a round number, unlike say 4000
+      const k256 = 256 * 1024;
+      test('Create large number of JNI references without deleting', () {
+        for (var i = 0; i < k4; i++) {
+          final e = Example.new$1(i);
+          expect(e.number, equals(i));
+        }
+      });
+      test('Create many JNI refs with scoped deletion', () {
+        for (var i = 0; i < k256; i++) {
+          using((arena) {
+            final e = Example.new$1(i)..releasedBy(arena);
+            expect(e.number, equals(i));
+          });
+        }
+      });
+      test('Create many JNI refs with scoped deletion, in batches', () {
+        for (var i = 0; i < 256; i++) {
+          using((arena) {
+            for (var i = 0; i < 1024; i++) {
+              final e = Example.new$1(i)..releasedBy(arena);
+              expect(e.number, equals(i));
+            }
+          });
+        }
+      });
+      test('Create large number of JNI refs with manual delete', () {
+        for (var i = 0; i < k256; i++) {
+          final e = Example.new$1(i);
+          expect(e.number, equals(i));
+          e.release();
+        }
+      });
+      test('Method returning primitive type does not create references', () {
+        using((arena) {
+          final e = Example.new$1(64)..releasedBy(arena);
+          for (var i = 0; i < k256; i++) {
+            expect(e.number, equals(64));
+          }
+        });
+      });
+      test('Class references are cached', () {
+        final asterisk = '*'.codeUnitAt(0);
+        for (var i = 0; i < k256; i++) {
+          expect(Fields.asterisk, equals(asterisk));
+        }
+      });
+      void testPassageOfTime(int n) {
+        test('Refs are not inadvertently deleted after $n seconds', () {
+          final f = Fields();
+          expect(f.trillion, equals(trillion));
+          sleep(Duration(seconds: n));
+          expect(f.trillion, equals(trillion));
+        });
+      }
+
+      if (!Platform.isAndroid) {
+        testPassageOfTime(1);
+        testPassageOfTime(4);
+      }
+    });
+  });
+}
+
+final class DartStringToIntParser with $StringConverter {
+  final int radix;
+
+  DartStringToIntParser({required this.radix});
+
+  @override
+  int parseToInt(JString? s) {
+    return int.parse(s!.toDartString(releaseOriginal: true), radix: radix);
+  }
+}
+
+final class AsyncRunnable with $MyRunnable {
+  final Completer<void> completer;
+
+  AsyncRunnable(this.completer);
+
+  @override
+  Future<void> run() async {
+    completer.complete();
+  }
+
+  @override
+  bool get run$async => true;
+}

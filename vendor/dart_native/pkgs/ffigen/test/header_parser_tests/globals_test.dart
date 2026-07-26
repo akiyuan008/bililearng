@@ -1,0 +1,164 @@
+// Copyright (c) 2021, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'package:ffigen/src/code_generator.dart';
+import 'package:ffigen/src/config_provider/config.dart';
+import 'package:ffigen/src/header_parser/parser.dart' as parser;
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
+
+import '../test_utils.dart';
+
+late Library actual, expected;
+
+void main() {
+  group('globals_test', () {
+    setUpAll(() {
+      expected = expectedLibrary();
+      actual = parser.parse(
+        testContext(
+          testConfigFromPath(
+            configPath(
+              path.join(packagePathForTests, 'test', 'header_parser_tests'),
+              'globals_config.yaml',
+            ),
+          ),
+        ),
+      );
+    });
+
+    test('Total bindings count', () {
+      expect(actual.bindings.length, expected.bindings.length);
+    });
+
+    test('Parse global Values', () {
+      expect(
+        actual.getBindingAsString('coolGlobal'),
+        expected.getBindingAsString('coolGlobal'),
+      );
+      expect(
+        actual.getBindingAsString('myInt'),
+        expected.getBindingAsString('myInt'),
+      );
+      expect(
+        actual.getBindingAsString('aGlobalPointer0'),
+        expected.getBindingAsString('aGlobalPointer0'),
+      );
+      expect(
+        actual.getBindingAsString('aGlobalPointer1'),
+        expected.getBindingAsString('aGlobalPointer1'),
+      );
+      expect(
+        actual.getBindingAsString('aGlobalPointer2'),
+        expected.getBindingAsString('aGlobalPointer2'),
+      );
+      expect(
+        actual.getBindingAsString('aGlobalPointer3'),
+        expected.getBindingAsString('aGlobalPointer3'),
+      );
+    });
+
+    test('Ignore global values', () {
+      expect(
+        () => actual.getBindingAsString('GlobalIgnore'),
+        throwsA(const TypeMatcher<NotFoundException>()),
+      );
+      expect(
+        () => actual.getBindingAsString('longDouble'),
+        throwsA(const TypeMatcher<NotFoundException>()),
+      );
+      expect(
+        () => actual.getBindingAsString('pointerToLongDouble'),
+        throwsA(const TypeMatcher<NotFoundException>()),
+      );
+    });
+
+    test('identifies constant globals', () {
+      final globalPointers = [
+        for (var i = 0; i < 4; i++)
+          actual.getBinding('aGlobalPointer$i') as Global,
+      ];
+
+      expect(globalPointers[0].constant, isFalse); // int32_t*
+      expect(globalPointers[1].constant, isTrue); // int32_t* const
+      expect(globalPointers[2].constant, isFalse); // const int32_t*
+      expect(globalPointers[3].constant, isTrue); // const int32_t* const
+    });
+  });
+}
+
+Library expectedLibrary() {
+  final context = testContext(
+    FfiGenerator(
+      output: Output(
+        dartFile: Uri.file('unused'),
+        style: const DynamicLibraryBindings(),
+      ),
+      enums: Enums.includeAll,
+      functions: Functions.includeAll,
+      globals: Globals.includeAll,
+      macros: Macros.includeAll,
+      structs: Structs.includeAll,
+      typedefs: Typedefs.includeAll,
+      unions: Unions.includeAll,
+      unnamedEnums: UnnamedEnums.includeAll,
+    ),
+  );
+  final globalStruct = Struct(context: context, name: 'EmptyStruct');
+  final globalStructAlias = Typealias(
+    name: 'EmptyStruct_Alias',
+    type: globalStruct,
+  );
+  return Library(
+    context: context,
+    bindings: parser.transformBindings([
+      Global(type: BooleanType(), name: 'coolGlobal'),
+      Global(
+        type: NativeType(SupportedNativeType.int32),
+        name: 'myInt',
+        exposeSymbolAddress: true,
+      ),
+      Global(
+        type: PointerType(NativeType(SupportedNativeType.int32)),
+        name: 'aGlobalPointer0',
+        exposeSymbolAddress: true,
+      ),
+      Global(
+        type: PointerType(NativeType(SupportedNativeType.int32)),
+        name: 'aGlobalPointer1',
+        exposeSymbolAddress: true,
+        constant: true,
+      ),
+      Global(
+        type: PointerType(NativeType(SupportedNativeType.int32)),
+        name: 'aGlobalPointer2',
+        exposeSymbolAddress: true,
+      ),
+      Global(
+        type: PointerType(NativeType(SupportedNativeType.int32)),
+        name: 'aGlobalPointer3',
+        exposeSymbolAddress: true,
+        constant: true,
+      ),
+      Global(
+        type: ConstantArray(3, intType, useArrayType: false),
+        name: 'globalArray0',
+        exposeSymbolAddress: true,
+        constant: true,
+      ),
+      globalStruct,
+      Global(
+        name: 'globalStruct',
+        type: globalStruct,
+        exposeSymbolAddress: true,
+      ),
+      globalStructAlias,
+      Global(
+        name: 'globalStruct_from_alias',
+        type: globalStructAlias,
+        exposeSymbolAddress: true,
+      ),
+    ], context),
+  );
+}

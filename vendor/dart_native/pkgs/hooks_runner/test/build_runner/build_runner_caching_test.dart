@@ -1,0 +1,402 @@
+// Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:code_assets/code_assets.dart';
+import 'package:data_assets/data_assets.dart';
+import 'package:hooks_runner/src/build_runner/build_runner.dart';
+import 'package:native_test_helpers/native_test_helpers.dart';
+import 'package:pub_formats/pub_formats.dart';
+import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
+
+import '../helpers.dart';
+import 'helpers.dart';
+
+const Timeout longTimeout = Timeout(Duration(minutes: 5));
+
+void main() async {
+  test('cached build', timeout: longTimeout, () async {
+    await inTempDir((tempUri) async {
+      await copyTestProjects(targetUri: tempUri);
+      final packageUri = tempUri.resolve('native_add/');
+      final pubspecUri = packageUri.resolve('pubspec.yaml');
+      final userDefines = UserDefines(workspacePubspec: pubspecUri);
+
+      await runPubGet(workingDirectory: packageUri, logger: logger);
+
+      {
+        final logMessages = <String>[];
+        final result = (await build(
+          packageUri,
+          logger,
+          dartExecutable,
+          capturedLogs: logMessages,
+          buildAssetTypes: [.code],
+          userDefines: userDefines,
+        )).success;
+        expect(
+          logMessages.join('\n'),
+          contains(
+            'native_add${Platform.pathSeparator}hook'
+            '${Platform.pathSeparator}build.dart',
+          ),
+        );
+
+        // Dependencies reported in the hook should be in the result.
+        expect(
+          result.dependencies,
+          contains(packageUri.resolve('src/native_add.c')),
+        );
+
+        final dependenciesAsPaths = result.dependencies
+            .map((uri) => uri.toFilePath(windows: false))
+            .toList();
+
+        // The source of the hook should be in the result.
+        expect(
+          dependenciesAsPaths,
+          contains(contains('native_add/hook/build.dart')),
+        );
+
+        // `package:logging` sources should be from pub.dev and not in the
+        // result.
+        expect(
+          dependenciesAsPaths,
+          isNot(
+            contains(stringContainsInOrder(['logging-', 'lib/logging.dart'])),
+          ),
+        );
+      }
+
+      {
+        final logMessages = <String>[];
+        final result = (await build(
+          packageUri,
+          logger,
+          dartExecutable,
+          capturedLogs: logMessages,
+          buildAssetTypes: [.code],
+          userDefines: userDefines,
+        )).success;
+        final hookUri = packageUri.resolve('hook/build.dart');
+        expect(
+          logMessages.join('\n'),
+          isNot(contains('Recompiling ${hookUri.toFilePath()}')),
+        );
+        expect(
+          logMessages.join('\n'),
+          contains('Skipping build for native_add'),
+        );
+        expect(
+          logMessages.join('\n'),
+          isNot(
+            contains(
+              'native_add${Platform.pathSeparator}hook'
+              '${Platform.pathSeparator}build.dart',
+            ),
+          ),
+        );
+        expect(
+          result.dependencies,
+          contains(packageUri.resolve('src/native_add.c')),
+        );
+      }
+
+      {
+        final pubspecFile = File.fromUri(pubspecUri);
+        final pubspec = PubspecYamlFileSyntax.fromJson(
+          convertYamlMapToJsonMap(
+            loadYaml(pubspecFile.readAsStringSync()) as YamlMap,
+          ),
+        );
+        pubspec.hooks = HooksSyntax(
+          userDefines: {
+            pubspec.name: {'key': 'value'},
+          },
+        );
+        pubspecFile.writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(pubspec.json),
+        );
+        // Changing the user-defines (or any other input) should lead to a rerun
+        // build.
+        final logMessages = <String>[];
+        (await build(
+          packageUri,
+          logger,
+          dartExecutable,
+          capturedLogs: logMessages,
+          buildAssetTypes: [.code],
+          userDefines: userDefines,
+        )).success;
+        expect(
+          logMessages.join('\n'),
+          isNot(contains('Skipping build for native_add')),
+        );
+        expect(logMessages.join('\n'), contains('Input changed'));
+      }
+    });
+  });
+
+  test('modify C file', timeout: longTimeout, () async {
+    await inTempDir((tempUri) async {
+      await copyTestProjects(targetUri: tempUri);
+      final packageUri = tempUri.resolve('native_add/');
+
+      final logMessages = <String>[];
+      final logger = createCapturingLogger(logMessages);
+
+      await runPubGet(workingDirectory: packageUri, logger: logger);
+      logMessages.clear();
+
+      {
+        final result = (await build(
+          packageUri,
+          logger,
+          dartExecutable,
+          buildAssetTypes: [.code],
+        )).success;
+        await expectSymbols(
+          asset: CodeAsset.fromEncoded(result.encodedAssets.single),
+          symbols: ['add'],
+        );
+        logMessages.clear();
+      }
+
+      await copyTestProjects(
+        sourceUri: testDataUri.resolve('native_add_add_symbol/'),
+        targetUri: packageUri,
+      );
+
+      {
+        final result = (await build(
+          packageUri,
+          logger,
+          dartExecutable,
+          buildAssetTypes: [.code],
+        )).success;
+
+        final cUri = packageUri.resolve('src/').resolve('native_add.c');
+        expect(
+          logMessages.join('\n'),
+          stringContainsInOrder([
+            'Rerunning build for native_add in',
+            'File contents changed: ${cUri.toFilePath()}.',
+          ]),
+        );
+
+        await expectSymbols(
+          asset: CodeAsset.fromEncoded(result.encodedAssets.single),
+          symbols: ['add', 'subtract'],
+        );
+      }
+    });
+  });
+
+  test('add C file, modify hook', timeout: longTimeout, () async {
+    await inTempDir((tempUri) async {
+      await copyTestProjects(targetUri: tempUri);
+      final packageUri = tempUri.resolve('native_add/');
+
+      final logMessages = <String>[];
+      final logger = createCapturingLogger(logMessages);
+
+      await runPubGet(workingDirectory: packageUri, logger: logger);
+      logMessages.clear();
+
+      final result = (await build(
+        packageUri,
+        logger,
+        dartExecutable,
+        buildAssetTypes: [BuildAssetType.code],
+      )).success;
+      {
+        final compiledHook = logMessages
+            .where(
+              (m) =>
+                  m.contains('dart compile kernel') ||
+                  m.contains('dart.exe compile kernel'),
+            )
+            .isNotEmpty;
+        expect(compiledHook, isTrue);
+      }
+      logMessages.clear();
+      await expectSymbols(
+        asset: CodeAsset.fromEncoded(result.encodedAssets.single),
+        symbols: ['add'],
+      );
+
+      await copyTestProjects(
+        sourceUri: testDataUri.resolve('native_add_add_source/'),
+        targetUri: packageUri,
+      );
+
+      {
+        final result = (await build(
+          packageUri,
+          logger,
+          dartExecutable,
+          buildAssetTypes: [.code],
+        )).success;
+
+        final hookUri = packageUri.resolve('hook/build.dart');
+        expect(
+          logMessages.join('\n'),
+          contains('Recompiling ${hookUri.toFilePath()}'),
+        );
+
+        logMessages.clear();
+        await expectSymbols(
+          asset: CodeAsset.fromEncoded(result.encodedAssets.single),
+          symbols: ['add', 'multiply'],
+        );
+      }
+    });
+  });
+
+  for (final modifiedEnvKey in ['PATH', 'CUSTOM_KEY_123']) {
+    test('change environment $modifiedEnvKey', timeout: longTimeout, () async {
+      await inTempDir((tempUri) async {
+        await copyTestProjects(targetUri: tempUri);
+        final packageUri = tempUri.resolve('native_add/');
+
+        final logMessages = <String>[];
+        final logger = createCapturingLogger(logMessages);
+
+        await runPubGet(workingDirectory: packageUri, logger: logger);
+        logMessages.clear();
+
+        (await build(
+          packageUri,
+          logger,
+          dartExecutable,
+          buildAssetTypes: [.code],
+          hookEnvironment: modifiedEnvKey == 'PATH'
+              ? null
+              : filteredEnvironment(
+                  NativeAssetsBuildRunner.includeHookEnvironmentVariable,
+                ),
+        )).success;
+        logMessages.clear();
+
+        // Simulate that the environment variables changed by augmenting the
+        // persisted environment from the last invocation.
+        final dependenciesHashFile = File.fromUri(
+          (Directory.fromUri(
+                    packageUri.resolve('.dart_tool/hooks_runner/native_add/'),
+                  ).listSync().single
+                  as Directory)
+              .uri
+              .resolve('dependencies.dependencies_hash_file.json'),
+        );
+        expect(await dependenciesHashFile.exists(), true);
+        final dependenciesContent =
+            jsonDecode(await dependenciesHashFile.readAsString())
+                as Map<Object, Object?>;
+        (dependenciesContent['environment'] as List<dynamic>).add({
+          'key': modifiedEnvKey,
+          'hash': 123456789,
+        });
+        await dependenciesHashFile.writeAsString(
+          jsonEncode(dependenciesContent),
+        );
+
+        (await build(
+          packageUri,
+          logger,
+          dartExecutable,
+          buildAssetTypes: [.code],
+        )).success;
+        expect(logMessages.join('\n'), contains('hook.dill'));
+        expect(
+          logMessages.join('\n'),
+          isNot(contains('Skipping build for native_add')),
+        );
+        expect(
+          logMessages.join('\n'),
+          contains('Environment variable changed: $modifiedEnvKey.'),
+        );
+        logMessages.clear();
+      });
+    });
+  }
+
+  test(
+    'generated data asset cache invalidation',
+    timeout: longTimeout,
+    () async {
+      await inTempDir((tempUri) async {
+        await copyTestProjects(targetUri: tempUri);
+        final packageUri = tempUri.resolve('simple_data_asset_generated/');
+
+        await runPubGet(workingDirectory: packageUri, logger: logger);
+
+        // 1. Initial build.
+        {
+          final logMessages = <String>[];
+          final result = await buildDataAssets(
+            packageUri,
+            capturedLogs: logMessages,
+          );
+          expect(result.isSuccess, isTrue);
+          expect(
+            logMessages.join('\n'),
+            contains(
+              'simple_data_asset_generated${Platform.pathSeparator}hook'
+              '${Platform.pathSeparator}build.dart',
+            ),
+          );
+          final dataAssets = result.success.encodedAssets
+              .where((e) => e.isDataAsset)
+              .map(DataAsset.fromEncoded)
+              .toList();
+          expect(dataAssets, hasLength(1));
+          expect(dataAssets.single.name, 'data/generated.txt');
+        }
+
+        // 2. Cached build.
+        {
+          final logMessages = <String>[];
+          final result = await buildDataAssets(
+            packageUri,
+            capturedLogs: logMessages,
+          );
+          expect(result.isSuccess, isTrue);
+          expect(
+            logMessages.join('\n'),
+            contains('Skipping build for simple_data_asset_generated'),
+          );
+        }
+
+        // 3. Delete the generated output asset file.
+        final generatedFile = File.fromUri(
+          packageUri.resolve('data/generated.txt'),
+        );
+        await generatedFile.delete();
+
+        // 4. Re-run build, should be invalidated.
+        {
+          final logMessages = <String>[];
+          final result = await buildDataAssets(
+            packageUri,
+            capturedLogs: logMessages,
+          );
+          expect(result.isSuccess, isTrue);
+          expect(
+            logMessages.join('\n'),
+            contains(
+              'File contents changed: ${generatedFile.uri.toFilePath()}.',
+            ),
+          );
+          expect(
+            logMessages.join('\n'),
+            contains('Rerunning build for simple_data_asset_generated'),
+          );
+        }
+      });
+    },
+  );
+}

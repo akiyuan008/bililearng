@@ -1,0 +1,37 @@
+name: in_app_java
+description: |
+  Example on how to use JNIgen to bridge between java and dart in a flutter
+  project.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  jni:
+    path: ../../../jni
+  jni_flutter:
+    path: ../../../jni_flutter
+
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  jnigen:
+    path: ../../
+
+  flutter_lints: ^6.0.0
+
+dependency_overrides:
+  jni:
+    path: ../../../jni
+
+flutter:
+  uses-material-design: true
+

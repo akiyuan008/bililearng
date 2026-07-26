@@ -1,0 +1,381 @@
+// Copyright (c) 2024, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:convert';
+
+import 'package:logging/logging.dart';
+import 'package:swift2objc/src/ast/_core/interfaces/declaration.dart';
+import 'package:swift2objc/src/ast/_core/shared/referred_type.dart';
+import 'package:swift2objc/src/ast/declarations/built_in/built_in_declaration.dart';
+import 'package:swift2objc/src/ast/declarations/compounds/class_declaration.dart';
+import 'package:swift2objc/src/context.dart';
+import 'package:swift2objc/src/parser/_core/json.dart';
+import 'package:swift2objc/src/parser/_core/parsed_symbolgraph.dart';
+import 'package:swift2objc/src/parser/_core/token_list.dart';
+import 'package:swift2objc/src/parser/parsers/parse_type.dart';
+import 'package:test/test.dart';
+
+void main() {
+  final context = Context(Logger.root);
+
+  final classFoo = ClassDeclaration(
+    id: 'Foo',
+    name: 'Foo',
+    source: null,
+    availability: const [],
+  );
+  final classBar = ClassDeclaration(
+    id: 'Bar',
+    name: 'Bar',
+    source: null,
+    availability: const [],
+  );
+
+  final testDecls = <Declaration>[...builtInDeclarations, classFoo, classBar];
+  final parsedSymbols = ParsedSymbolgraph(
+    symbols: {
+      for (final decl in testDecls)
+        decl.id: ParsedSymbol(
+          source: null,
+          json: Json(null),
+          declaration: decl,
+        ),
+    },
+  );
+
+  test('Type identifier', () {
+    final fragments = Json(
+      jsonDecode('''
+      [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        }
+      ]
+      '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type.sameAs(intType), isTrue);
+    expect(remaining.length, 0);
+  });
+
+  test('Inout', () {
+    final fragments = Json(
+      jsonDecode('''
+      [
+        {
+          "kind": "keyword",
+          "spelling": "inout"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        }
+      ]
+      '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type.sameAs(InoutType(intType)), isTrue);
+    expect(remaining.length, 0);
+  });
+
+  test('Inout non-primitive', () {
+    final fragments = Json(
+      jsonDecode('''
+      [
+        {
+          "kind": "keyword",
+          "spelling": "inout"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Foo",
+          "preciseIdentifier": "Foo"
+        }
+      ]
+      '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type.sameAs(InoutType(classFoo.asDeclaredType)), isTrue);
+    expect(remaining.length, 0);
+  });
+
+  test('Empty tuple', () {
+    final fragments = Json(
+      jsonDecode('''
+      [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+      '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type.sameAs(voidType), isTrue);
+    expect(remaining.length, 0);
+  });
+
+  test('Optional', () {
+    final fragments = Json(
+      jsonDecode('''
+      [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        },
+        {
+          "kind": "text",
+          "spelling": "?"
+        }
+      ]
+      '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type.sameAs(OptionalType(intType)), isTrue);
+    expect(remaining.length, 0);
+  });
+
+  test('Nested type', () {
+    final fragments = Json(
+      jsonDecode('''
+      [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "Foo"
+        },
+        {
+          "kind": "text",
+          "spelling": "."
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "Bar"
+        }
+      ]
+      '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type.sameAs(classBar.asDeclaredType), isTrue);
+    expect(remaining.length, 0);
+  });
+
+  test('Multiple suffixes', () {
+    // This test is verifying that we can parse multiple suffix operators in a
+    // row. Nested OptionalTypes don't really make sense though. So in future if
+    // we start collapsing nested OptionalTypes, change this test to use a
+    // different suffix type.
+    final fragments = Json(
+      jsonDecode('''
+      [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        },
+        {
+          "kind": "text",
+          "spelling": "?"
+        },
+        {
+          "kind": "text",
+          "spelling": "?"
+        },
+        {
+          "kind": "text",
+          "spelling": "?"
+        }
+      ]
+      '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type.sameAs(OptionalType(intType)), isFalse);
+    expect(
+      type.sameAs(OptionalType(OptionalType(OptionalType(intType)))),
+      isTrue,
+    );
+    expect(remaining.length, 0);
+  });
+
+  test('Stop parsing when we find a non-type token', () {
+    final fragments = Json(
+      jsonDecode('''
+      [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        },
+        {
+          "kind": "text",
+          "spelling": "?"
+        },
+        {
+          "kind": "text",
+          "spelling": ","
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        }
+      ]
+      '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type.sameAs(OptionalType(intType)), isTrue);
+    expect(remaining.length, 2);
+  });
+
+  test('Labeled and Nested Tuple', () {
+    final fragments = Json(
+      jsonDecode('''
+    [
+      {"kind": "text", "spelling": "("},
+      {"kind": "text", "spelling": "id"},
+      {"kind": "text", "spelling": ": "},
+      {"kind": "typeIdentifier", "spelling": "Int", "preciseIdentifier": "s:Si"},
+      {"kind": "text", "spelling": ", "},
+      {"kind": "text", "spelling": "data"},
+      {"kind": "text", "spelling": ": "},
+      {"kind": "text", "spelling": "("},
+      {"kind": "typeIdentifier", "spelling": "String", "preciseIdentifier": "s:SS"},
+      {"kind": "text", "spelling": ", "},
+      {"kind": "typeIdentifier", "spelling": "Bool", "preciseIdentifier": "s:Sb"},
+      {"kind": "text", "spelling": ")"},
+      {"kind": "text", "spelling": ")"}
+    ]
+    '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type is TupleType, isTrue);
+    final tuple = type as TupleType;
+
+    // Verify first level
+    expect(tuple.elements.length, 2);
+    expect(tuple.elements[0].label, 'id');
+    expect(tuple.elements[1].label, 'data');
+
+    // Verify nesting
+    final nestedTuple = tuple.elements[1].type as TupleType;
+    expect(nestedTuple.elements.length, 2);
+    expect(nestedTuple.elements[0].type.swiftType, 'String');
+    expect(remaining.length, 0);
+  });
+  test('Simple unlabeled tuple', () {
+    final fragments = Json(
+      jsonDecode('''
+    [
+      {"kind": "text", "spelling": "("},
+      {"kind": "typeIdentifier", "spelling": "Int", "preciseIdentifier": "s:Si"},
+      {"kind": "text", "spelling": ", "},
+      {"kind": "typeIdentifier", "spelling": "String", "preciseIdentifier": "s:SS"},
+      {"kind": "text", "spelling": ")"}
+    ]
+  '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type is TupleType, isTrue);
+    final tuple = type as TupleType;
+    expect(tuple.elements.length, 2);
+    expect(tuple.elements[0].label, isNull);
+    expect(tuple.elements[1].label, isNull);
+    expect(tuple.elements[0].type.swiftType, 'Int');
+    expect(tuple.elements[1].type.swiftType, 'String');
+    expect(remaining.length, 0);
+  });
+
+  test('Empty tuple (Void)', () {
+    final fragments = Json(
+      jsonDecode('''
+    [
+      {"kind": "text", "spelling": "("},
+      {"kind": "text", "spelling": ")"}
+    ]
+  '''),
+    );
+
+    final (type, remaining) = parseType(
+      context,
+      parsedSymbols,
+      TokenList(fragments),
+    );
+
+    expect(type, voidType);
+    expect(remaining.length, 0);
+  });
+}

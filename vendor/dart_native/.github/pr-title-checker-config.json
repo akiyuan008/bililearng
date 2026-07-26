@@ -1,0 +1,34 @@
+{
+    "CHECKS": {
+        "prefixes": [
+            "[code_assets] ",
+            "[data_assets] ",
+            "[doc] ",
+            "[ffi] ",
+            "[ffigen] ",
+            "[hooks_runner] ",
+            "[hooks] ",
+            "[infra] ",
+            "[jni] ",
+            "[jni_flutter] ",
+            "[jnigen] ",
+            "[json_syntax_generator] ",
+            "[native_doc_dartifier] ",
+            "[native_test_helpers] ",
+            "[native_toolchain_c] ",
+            "[objective_c] ",
+            "[pub_formats] ",
+            "[record_use] ",
+            "[swift2objc] ",
+            "[swiftgen] "
+        ],
+        "ignoreLabels": [
+            "skip-pr-title-check"
+        ]
+    },
+    "MESSAGES": {
+        "success": "All OK",
+        "failure": "The PR title has to contain a package name like \"[ffigen]\", or \"[infra]\".",
+        "notice": ""
+    }
+}

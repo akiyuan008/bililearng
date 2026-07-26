@@ -1,0 +1,225 @@
+import 'dart:async';
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/src/config/enum_config.dart';
+import 'package:flutter_smart_dialog/src/data/base_dialog.dart';
+import 'package:flutter_smart_dialog/src/data/notify_info.dart';
+import 'package:flutter_smart_dialog/src/data/show_param.dart';
+import 'package:flutter_smart_dialog/src/data/smart_tag.dart';
+import 'package:flutter_smart_dialog/src/helper/dialog_proxy.dart';
+import 'package:flutter_smart_dialog/src/kit/debounce_utils.dart';
+import 'package:flutter_smart_dialog/src/kit/typedef.dart';
+import 'package:flutter_smart_dialog/src/kit/view_utils.dart';
+import 'package:flutter_smart_dialog/src/smart_dialog.dart';
+import 'package:flutter_smart_dialog/src/widget/helper/smart_overlay_entry.dart';
+
+///main function : notify dialog
+class CustomNotify extends BaseDialog {
+  CustomNotify({required SmartOverlayEntry overlayEntry}) : super(overlayEntry);
+
+  Future<T?> showNotify<T>({
+    required SmartShowNotifyParam param,
+  }) {
+    if (DebounceUtils.instance
+        .banContinue(DebounceType.notify, param.debounce)) {
+      return Future.value(null);
+    }
+
+    final notifyInfo = _handleMustOperate(
+      tag: param.tag,
+      keepSingle: param.keepSingle,
+      debounce: param.debounce,
+      displayTime: param.displayTime,
+      backType: param.backType,
+      onBack: param.onBack,
+    );
+    return mainDialog.show<T>(
+      param: SmartMainDialogParam(
+        widget: param.widget,
+        alignment: param.alignment,
+        clickMaskDismiss: param.clickMaskDismiss,
+        animationType: param.animationType,
+        nonAnimationTypes: param.nonAnimationTypes,
+        animationBuilder: param.animationBuilder,
+        usePenetrate: param.usePenetrate,
+        useAnimation: param.useAnimation,
+        animationTime: param.animationTime,
+        maskColor: param.maskColor,
+        maskWidget: param.maskWidget,
+        onDismiss:
+            _handleDismiss(param.onDismiss, param.displayTime, notifyInfo),
+        useSystem: false,
+        reuse: true,
+        awaitOverType: SmartDialog.config.notify.awaitOverType,
+        maskTriggerType: SmartDialog.config.notify.maskTriggerType,
+        ignoreArea: null,
+        keepSingle: param.keepSingle,
+        onMask: () {
+          param.onMask?.call();
+          if (!param.clickMaskDismiss ||
+              DebounceUtils.instance.banContinue(DebounceType.mask, true)) {
+            return;
+          }
+          dismiss(closeType: CloseType.mask, tag: notifyInfo.tag);
+        },
+      ),
+    );
+  }
+
+  VoidCallback _handleDismiss(
+    VoidCallback? onDismiss,
+    Duration? displayTime,
+    NotifyInfo notifyInfo,
+  ) {
+    if (notifyInfo.tag == SmartTag.keepSingle) {
+      notifyInfo.displayTimer?.cancel();
+    }
+
+    Timer? timer;
+    final tag = notifyInfo.tag;
+    if (displayTime != null && tag != null) {
+      timer = Timer(displayTime, () => dismiss(tag: tag));
+      notifyInfo.displayTimer = timer;
+    }
+
+    return () {
+      timer?.cancel();
+      onDismiss?.call();
+    };
+  }
+
+  NotifyInfo _handleMustOperate({
+    required String? tag,
+    required bool keepSingle,
+    required bool debounce,
+    required Duration? displayTime,
+    required SmartBackType backType,
+    required SmartOnBack? onBack,
+  }) {
+    SmartDialog.config.notify.isExist = true;
+
+    NotifyInfo notifyInfo;
+    if (keepSingle) {
+      var singleNotifyInfo = _getDialog(tag: tag ?? SmartTag.keepSingle);
+      if (singleNotifyInfo == null) {
+        singleNotifyInfo = NotifyInfo(
+          dialog: this,
+          tag: tag ?? SmartTag.keepSingle,
+          backType: backType,
+          onBack: onBack,
+        );
+        _pushDialog(singleNotifyInfo);
+      }
+      mainDialog = singleNotifyInfo.dialog.mainDialog;
+      notifyInfo = singleNotifyInfo;
+    } else {
+      tag = tag ?? '${hashCode + Random().nextDouble()}';
+
+      // handle dialog stack
+      notifyInfo = NotifyInfo(
+        dialog: this,
+        tag: tag,
+        backType: backType,
+        onBack: onBack,
+      );
+      _pushDialog(notifyInfo);
+    }
+
+    return notifyInfo;
+  }
+
+  void _pushDialog(NotifyInfo notifyInfo) {
+    var proxy = DialogProxy.instance;
+    proxy.notifyQueue.addLast(notifyInfo);
+
+    // insert the dialog carrier into the page
+    ViewUtils.addSafeUse(() {
+      try {
+        overlay(DialogProxy.contextNotify).insert(
+          overlayEntry,
+          below: proxy.entryLoading,
+        );
+      } catch (e) {
+        overlay(DialogProxy.contextNotify).insert(overlayEntry);
+      }
+    });
+  }
+
+  static Future<void>? dismiss<T>({
+    DialogType type = DialogType.notify,
+    String? tag,
+    T? result,
+    bool force = false,
+    CloseType closeType = CloseType.normal,
+  }) {
+    if (type == DialogType.notify) {
+      return _closeSingle<T>(tag: tag, result: result, closeType: closeType);
+    } else {
+      return _closeAll<T>(tag: tag, result: result, closeType: closeType);
+    }
+  }
+
+  static Future<void> _closeAll<T>({
+    required String? tag,
+    required T? result,
+    required CloseType closeType,
+  }) async {
+    for (int i = DialogProxy.instance.notifyQueue.length; i > 0; i--) {
+      await _closeSingle<T>(
+        tag: tag,
+        result: result,
+        closeType: closeType,
+      );
+    }
+  }
+
+  static Future<void> _closeSingle<T>({
+    required String? tag,
+    required T? result,
+    required CloseType closeType,
+  }) async {
+    var info = _getDialog(tag: tag);
+    if (info == null) return;
+
+    //handle close dialog
+    var proxy = DialogProxy.instance;
+    proxy.notifyQueue.remove(info);
+
+    if (proxy.notifyQueue.isEmpty) {
+      proxy.config.notify.isExist = false;
+    }
+
+    //perform a real dismiss
+    var customDialog = info.dialog;
+    await customDialog.mainDialog.dismiss<T>(
+      result: result,
+      closeType: closeType,
+    );
+    customDialog.overlayEntry.remove();
+  }
+
+  static NotifyInfo? _getDialog({String? tag}) {
+    var proxy = DialogProxy.instance;
+    if (proxy.notifyQueue.isEmpty) return null;
+
+    NotifyInfo? info;
+    var notifyQueue = proxy.notifyQueue;
+    var list = notifyQueue.toList();
+
+    //handle dialog with tag
+    if (tag != null) {
+      for (var i = notifyQueue.length - 1; i >= 0; i--) {
+        if (notifyQueue.isEmpty) break;
+        if (list[i].tag == tag) info = list[i];
+      }
+      return info;
+    }
+
+    if (notifyQueue.isNotEmpty) {
+      info = list[list.length - 1];
+    }
+
+    return info;
+  }
+}

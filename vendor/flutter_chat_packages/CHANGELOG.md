@@ -1,0 +1,195 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## 2026-07-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`chat_bottom_container` - `v0.5.2`](#chat_bottom_container---v052)
+
+---
+
+#### `chat_bottom_container` - `v0.5.2`
+
+ - **FEAT**(chat_bottom_container): support Swift Package Manager for iOS (#40).
+
+
+## 2026-07-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`chat_bottom_container` - `v0.5.1`](#chat_bottom_container---v051)
+
+---
+
+#### `chat_bottom_container` - `v0.5.1`
+
+ - **FIX**(chat_bottom_container): bypass Flutter KGP static regex check via dynamic string concatenation.
+ - **FIX**(chat_bottom_container): Android plugin compatibility with AGP9 built-in Kotlin.
+
+
+## 2026-05-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`chat_bottom_container` - `v0.5.0`](#chat_bottom_container---v050)
+
+---
+
+#### `chat_bottom_container` - `v0.5.0`
+
+ - **FEAT**(chat_bottom_container): support orientation-specific keyboard height tracking.
+
+
+## 2026-05-26
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`chat_bottom_container` - `v0.4.1`](#chat_bottom_container---v041)
+
+---
+
+#### `chat_bottom_container` - `v0.4.1`
+
+ - **FIX**(chat_bottom_container): support dynamic update of safeAreaBottom.
+ - **DOCS**(chat_bottom_container): README.
+
+
+## 2025-07-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`chat_bottom_container` - `v0.4.0`](#chat_bottom_container---v040)
+
+---
+
+#### `chat_bottom_container` - `v0.4.0`
+
+ - **FEAT**(chat_bottom_container): allow custom panel container.
+ - **DOCS**(chat_bottom_container): README.
+
+
+## 2025-06-26
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`chat_bottom_container` - `v0.3.2`](#chat_bottom_container---v032)
+
+---
+
+#### `chat_bottom_container` - `v0.3.2`
+
+ - **FIX**(chat_bottom_container): remove listeners from inputFocusNode when ChatBottomPanelContainer is disposed.
+
+
+## 2025-03-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`chat_bottom_container` - `v0.3.1`](#chat_bottom_container---v031)
+
+---
+
+#### `chat_bottom_container` - `v0.3.1`
+
+ - **FEAT**(chat_bottom_container): allow switching focusNode.
+
+
+## 2024-12-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`chat_bottom_container` - `v0.3.0`](#chat_bottom_container---v030)
+ - [`chat_bottom_container` - `0.2.1`](#chat_bottom_container---021)
+ - [`chat_bottom_container` - `0.2.0`](#chat_bottom_container---020)
+ - [`chat_bottom_container` - `0.1.0`](#chat_bottom_container---010)
+
+---
+
+#### `chat_bottom_container` - `v0.3.0`
+
+ - **FEAT**(chat_bottom_container): add safeAreaBottom to ChatBottomPanelContainerController.
+
+
+#### `chat_bottom_container` - `0.2.1`
+
+* Avoid conflicts with flutter engine's view event listener on Android.
+
+#### `chat_bottom_container` - `0.2.0`
+
+* Support switching to other panel, the input box gets the focus and displays the cursor.
+* Record keyboard height to optimize user experience next time.
+
+#### `chat_bottom_container` - `0.1.0`
+
+* Adjust keyboard height listener manager logic.
+* Add `safeAreaBottom` and `changeKeyboardPanelHeight`.
+* Adjust the logic about obtaining the bottom height of the safe area.
+* Adjust the constraints of the SDK (sdk: ">=3.0.0 <4.0.0").
+* Fix version of `FSAChatBottomContainer.xcframework`.

@@ -1,0 +1,186 @@
+// Copyright (c) 2023, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+// Objective C support is only available on mac.
+@TestOn('mac-os')
+// Keep in sync with static_func_test.dart. These are the same tests, but using
+// @Native.
+import 'dart:ffi';
+import 'dart:io';
+
+import 'package:ffi/ffi.dart';
+import 'package:objective_c/objective_c.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
+
+import '../test_utils.dart';
+import 'static_func_native_test_bindings.dart';
+import 'util.dart';
+
+typedef IntBlock = ObjCBlock_Int32_Int32;
+
+void main() {
+  group('static functions', () {
+    Pointer<Int32> staticFuncOfObjectRefCountTest(Allocator alloc) {
+      final counter = alloc<Int32>();
+      counter.value = 0;
+
+      final obj = StaticFuncTestObj.newWithCounter(counter);
+      expect(counter.value, 1);
+
+      final pool = objc_autoreleasePoolPush();
+      final outputObj = staticFuncOfObject(obj);
+      objc_autoreleasePoolPop(pool);
+      expect(obj, outputObj);
+      expect(counter.value, 1);
+
+      return counter;
+    }
+
+    test(
+      'Objects passed through static functions have correct ref counts',
+      () {
+        using((Arena arena) {
+          final (counter) = staticFuncOfObjectRefCountTest(arena);
+          doGC();
+          expect(counter.value, 0);
+        });
+      },
+      skip: !canDoGC,
+    );
+
+    @pragma('vm:never-inline')
+    Pointer<Int32> staticFuncOfNullableObjectRefCountTest(Allocator alloc) {
+      final counter = alloc<Int32>();
+      counter.value = 0;
+
+      final obj = StaticFuncTestObj.newWithCounter(counter);
+      expect(counter.value, 1);
+
+      final pool = objc_autoreleasePoolPush();
+      final outputObj = staticFuncOfNullableObject(obj);
+      objc_autoreleasePoolPop(pool);
+      expect(obj, outputObj);
+      expect(counter.value, 1);
+
+      return counter;
+    }
+
+    test(
+      'Nullables passed through static functions have correct ref counts',
+      () {
+        using((Arena arena) {
+          final (counter) = staticFuncOfNullableObjectRefCountTest(arena);
+          doGC();
+          expect(counter.value, 0);
+
+          expect(staticFuncOfNullableObject(null), isNull);
+        });
+      },
+      skip: !canDoGC,
+    );
+
+    @pragma('vm:never-inline')
+    void staticFuncOfBlockRefCountTest(
+      ReferenceTracker blockTracker,
+      ReferenceTracker outputBlockTracker,
+    ) {
+      final block = IntBlock.fromFunction((int x) => 2 * x);
+      blockTracker.trackBlock(block);
+
+      final pool = objc_autoreleasePoolPush();
+      final outputBlock = staticFuncOfBlock(block);
+      outputBlockTracker.trackBlock(outputBlock);
+      objc_autoreleasePoolPop(pool);
+
+      expect(block, outputBlock);
+      expect(outputBlockTracker.isAlive, true);
+    }
+
+    test(
+      'Blocks passed through static functions have correct ref counts',
+      () async {
+        await using((arena) async {
+          final blockTracker = ReferenceTracker(arena);
+          final outputBlockTracker = ReferenceTracker(arena);
+          staticFuncOfBlockRefCountTest(blockTracker, outputBlockTracker);
+          doGC();
+          await Future<void>.delayed(Duration.zero);
+          doGC();
+          expect(blockTracker.isAlive, false);
+          expect(outputBlockTracker.isAlive, false);
+        });
+      },
+      skip: !canDoGC,
+    );
+
+    @pragma('vm:never-inline')
+    Pointer<Int32> staticFuncReturnsRetainedRefCountTest(Allocator alloc) {
+      final counter = alloc<Int32>();
+      counter.value = 0;
+
+      final outputObj = staticFuncReturnsRetained(counter);
+      expect(counter.value, 1);
+
+      return counter;
+    }
+
+    test('Objects returned from static functions with NS_RETURNS_RETAINED '
+        'have correct ref counts', () {
+      using((Arena arena) {
+        final (counter) = staticFuncReturnsRetainedRefCountTest(arena);
+        doGC();
+        expect(counter.value, 0);
+      });
+    }, skip: !canDoGC);
+
+    Pointer<Int32> staticFuncOfObjectReturnsRetainedRefCountTest(
+      Allocator alloc,
+    ) {
+      final counter = alloc<Int32>();
+      counter.value = 0;
+
+      final obj = StaticFuncTestObj.newWithCounter(counter);
+      expect(counter.value, 1);
+
+      final outputObj = staticFuncReturnsRetainedArg(obj);
+      expect(obj, outputObj);
+      expect(counter.value, 1);
+
+      return counter;
+    }
+
+    test('Objects passed through static functions with NS_RETURNS_RETAINED '
+        'have correct ref counts', () {
+      using((Arena arena) {
+        final (counter) = staticFuncOfObjectReturnsRetainedRefCountTest(arena);
+        doGC();
+        expect(counter.value, 0);
+      });
+    }, skip: !canDoGC);
+
+    test('Objects passed to static functions that consume them '
+        'have correct ref counts', () {
+      final counter = calloc<Int32>();
+      StaticFuncTestObj? obj1 = StaticFuncTestObj.newWithCounter(counter);
+
+      expect(counter.value, 1);
+
+      staticFuncConsumesArg(obj1);
+
+      expect(counter.value, 1);
+
+      obj1 = null;
+      doGC();
+      expect(counter.value, 0);
+      calloc.free(counter);
+    }, skip: !canDoGC);
+
+    test('Internal variable conflict resolution', () {
+      // Regression test for https://github.com/dart-lang/native/issues/2760
+      expect(foo(123), 1230);
+      expect(fooPtr(123), 12300);
+    });
+  });
+}

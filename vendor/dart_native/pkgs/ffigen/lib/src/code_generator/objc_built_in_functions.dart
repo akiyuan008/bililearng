@@ -1,0 +1,588 @@
+// Copyright (c) 2022, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'package:path/path.dart' as path;
+
+import '../code_generator.dart';
+import '../config_provider.dart';
+import '../context.dart';
+import '../visitor/ast.dart';
+
+import 'binding_string.dart';
+import 'objc_built_in_types.dart';
+import 'scope.dart';
+import 'utils.dart';
+import 'writer.dart';
+
+/// Built in functions used by the Objective C bindings.
+class ObjCBuiltInFunctions {
+  ObjCBuiltInFunctions(this.context, this.generateForPackageObjectiveC)
+    : libraryId = _libraryIdFromConfigHash(context.config);
+
+  final Context context;
+  final bool generateForPackageObjectiveC;
+  final String libraryId;
+
+  static const registerName = ObjCImport('registerName');
+  static const getClass = ObjCImport('getClass');
+  static const msgSendPointer = ObjCImport('msgSendPointer');
+  static const msgSendFpretPointer = ObjCImport('msgSendFpretPointer');
+  static const msgSendStretPointer = ObjCImport('msgSendStretPointer');
+  static const useMsgSendVariants = ObjCImport('useMsgSendVariants');
+  static const respondsToSelector = ObjCImport('respondsToSelector');
+  static const newPointerBlock = ObjCImport('newPointerBlock');
+  static const newClosureBlock = ObjCImport('newClosureBlock');
+  static const getBlockClosure = ObjCImport('getBlockClosure');
+  static const getProtocolMethodSignature = ObjCImport(
+    'getProtocolMethodSignature',
+  );
+  static const getProtocol = ObjCImport('getProtocol');
+  static const objectRelease = ObjCImport('objectRelease');
+  static const signalWaiter = ObjCImport('signalWaiter');
+  static const objCContext = ObjCImport('objCContext');
+  static const objectBase = ObjCImport('ObjCObject');
+  static const protocolBase = ObjCImport('ObjCProtocol');
+  static const blockType = ObjCImport('ObjCBlock');
+  static const consumedType = ObjCImport('Consumed');
+  static const retainedType = ObjCImport('Retained');
+  static const protocolMethod = ObjCImport('ObjCProtocolMethod');
+  static const protocolListenableMethod = ObjCImport(
+    'ObjCProtocolListenableMethod',
+  );
+  static const protocolClass = ObjCImport('Protocol');
+  static const protocolBuilder = ObjCImport('ObjCProtocolBuilder');
+  static const unimplementedOptionalMethodException = ObjCImport(
+    'UnimplementedOptionalMethodException',
+  );
+  static const nsErrorException = ObjCImport('NSErrorException');
+  static const checkOsVersion = ObjCImport('checkOsVersionInternal');
+
+  // TODO(https://github.com/dart-lang/native/issues/1173): Ideally this check
+  // would be based on more than just the name.
+  String? getBuiltInInterfaceName(String name) =>
+      generateForPackageObjectiveC ? null : objCBuiltInInterfaces[name];
+  String? getBuiltInCompoundName(String name) =>
+      generateForPackageObjectiveC ? null : objCBuiltInCompounds[name];
+  bool isBuiltInEnum(String name) =>
+      !generateForPackageObjectiveC && objCBuiltInEnums.contains(name);
+  String? getBuiltInProtocolName(String name) =>
+      generateForPackageObjectiveC ? null : objCBuiltInProtocols[name];
+  bool isBuiltInCategory(String name) =>
+      !generateForPackageObjectiveC && objCBuiltInCategories.contains(name);
+  static bool isNSObject(String name) => name == 'NSObject';
+  static bool isNSError(String name) => name == 'NSError';
+
+  // We need to load a separate instance of objc_msgSend for each signature. If
+  // the return type is a struct, we need to use objc_msgSend_stret instead, and
+  // for float return types we need objc_msgSend_fpret.
+  final _msgSendFuncs = <String, ObjCMsgSendFunc>{};
+  ObjCMsgSendFunc getMsgSendFunc(Type returnType, List<Parameter> params) {
+    params = _methodSigParams(params);
+    returnType = _methodSigType(returnType);
+    final (id, idHash) = _methodSigId(returnType, params);
+    return _msgSendFuncs[id] ??= ObjCMsgSendFunc._(
+      '_objc_msgSend_$idHash',
+      returnType,
+      params,
+      useMsgSendVariants,
+    );
+  }
+
+  final _selObjects = <String, ObjCInternalGlobal>{};
+  ObjCInternalGlobal getSelObject(String methodName) {
+    return _selObjects[methodName] ??= ObjCInternalGlobal(
+      '_sel_${methodName.replaceAll(":", "_")}',
+      () => '${registerName.gen(context)}("$methodName")',
+    );
+  }
+
+  (String, String) _methodSigId(Type returnType, List<Parameter> params) {
+    final paramIds = <String>[];
+    for (final p in params) {
+      // The trampoline ID is based on the getNativeType of the param. Objects
+      // and blocks both have `id` as their native type, but need separate
+      // trampolines since they have different retain functions. So add the
+      // retain function (if any) to all the param IDs.
+      paramIds.add(
+        p.getNativeType(context, varName: p.type.generateRetain('') ?? ''),
+      );
+    }
+    final rt = returnType.getNativeType(
+      context,
+      varName: returnType.generateRetain('') ?? '',
+    );
+    final id = '$rt,${paramIds.join(',')}';
+    return (id, fnvHash32(id).toRadixString(36));
+  }
+
+  Type _methodSigType(Type t) {
+    if (t is FunctionType) {
+      return FunctionType(
+        returnType: _methodSigType(t.returnType),
+        parameters: _methodSigParams(t.parameters),
+        varArgParameters: _methodSigParams(t.varArgParameters),
+      );
+    } else if (t is ObjCBlock) {
+      return ObjCBlockPointer();
+    } else if (t is ObjCInterface) {
+      return ObjCObjectPointer();
+    } else if (t is ConstantArray) {
+      return ConstantArray(
+        t.length,
+        _methodSigType(t.child),
+        useArrayType: t.useArrayType,
+      );
+    } else if (t is PointerType) {
+      return PointerType(_methodSigType(t.child));
+    } else if (t is ObjCNullable) {
+      return _methodSigType(t.child);
+    } else if (t is Typealias) {
+      return _methodSigType(t.type);
+    }
+    return t;
+  }
+
+  List<Parameter> _methodSigParams(List<Parameter> params) => [
+    for (final p in params)
+      Parameter(type: _methodSigType(p.type), objCConsumed: p.objCConsumed),
+  ];
+
+  final _blockTrampolines = <String, ObjCBlockWrapperFuncs>{};
+  ObjCBlockWrapperFuncs? getBlockTrampolines(ObjCBlock block) {
+    final (id, idHash) = _methodSigId(block.returnType, block.params);
+    return _blockTrampolines[id] ??= ObjCBlockWrapperFuncs(
+      _blockTrampolineFunc('_${libraryId}_wrapListenerBlock_$idHash'),
+      _blockTrampolineFunc(
+        '_${libraryId}_wrapBlockingBlock_$idHash',
+        blocking: true,
+      ),
+    );
+  }
+
+  Func _blockTrampolineFunc(String name, {bool blocking = false}) => Func(
+    name: name,
+    returnType: PointerType(objCBlockType),
+    parameters: [
+      Parameter(
+        name: 'block',
+        type: PointerType(objCBlockType),
+        objCConsumed: false,
+      ),
+      if (blocking) ...[
+        Parameter(
+          name: 'listnerBlock',
+          type: PointerType(objCBlockType),
+          objCConsumed: false,
+        ),
+        Parameter(
+          name: 'context',
+          type: PointerType(objCContextType),
+          objCConsumed: false,
+        ),
+      ],
+    ],
+    objCReturnsRetained: true,
+    isLeaf: true,
+    isInternal: true,
+    useNameForLookup: true,
+    loadFromNativeAsset: true,
+  );
+
+  final _protocolTrampolines = <String, ObjCProtocolMethodTrampoline>{};
+  ObjCProtocolMethodTrampoline? getProtocolMethodTrampoline(ObjCBlock block) {
+    final (id, idHash) = _methodSigId(block.returnType, block.params);
+    return _protocolTrampolines[id] ??= ObjCProtocolMethodTrampoline(
+      Func(
+        name: '_${libraryId}_protocolTrampoline_$idHash',
+        returnType: block.returnType,
+        parameters: [
+          Parameter(
+            name: 'target',
+            type: PointerType(objCObjectType),
+            objCConsumed: false,
+          ),
+          ...block.params,
+        ],
+        objCReturnsRetained: false,
+        isLeaf: false,
+        isInternal: true,
+        useNameForLookup: true,
+        loadFromNativeAsset: true,
+      ),
+    );
+  }
+
+  static bool isInstanceType(Type type) {
+    if (type is ObjCInstanceType) return true;
+    final baseType = type.typealiasType;
+    return baseType is ObjCNullable && baseType.child is ObjCInstanceType;
+  }
+
+  // A unique (but not human readable) ID for the generated library based on
+  // a hash of parts of the config.
+  static String _libraryIdFromConfigHash(Config config) => fnvHash32(
+    [
+      ...config.headers.entryPoints,
+      config.output.dartFile,
+      config.output.objCFile,
+    ].map((uri) => path.basename(uri.toFilePath())).join('\n'),
+  ).toRadixString(36);
+}
+
+/// A native trampoline function for a listener block.
+class ObjCBlockWrapperFuncs extends AstNode {
+  final Func listenerWrapper;
+  final Func blockingWrapper;
+  bool objCBindingsGenerated = false;
+
+  ObjCBlockWrapperFuncs(this.listenerWrapper, this.blockingWrapper);
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visit(listenerWrapper);
+    visitor.visit(blockingWrapper);
+    visitor.visit(objcPkgImport);
+  }
+
+  @override
+  void visit(Visitation visitation) =>
+      visitation.visitObjCBlockWrapperFuncs(this);
+}
+
+/// A native trampoline function for a protocol method.
+class ObjCProtocolMethodTrampoline extends AstNode {
+  final Func func;
+  bool objCBindingsGenerated = false;
+
+  ObjCProtocolMethodTrampoline(this.func);
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visit(func);
+    visitor.visit(objcPkgImport);
+  }
+
+  @override
+  void visit(Visitation visitation) =>
+      visitation.visitObjCProtocolMethodTrampoline(this);
+}
+
+/// A function, global variable, or helper type defined in package:objective_c.
+class ObjCImport {
+  final String name;
+
+  const ObjCImport(this.name);
+
+  String gen(Context context) => '${context.libs.prefix(objcPkgImport)}.$name';
+}
+
+/// Globals only used internally by ObjC bindings, such as selectors.
+class ObjCInternalGlobal extends NoLookUpBinding {
+  final String Function() makeValue;
+
+  ObjCInternalGlobal(String name, this.makeValue)
+    : super(
+        originalName: name,
+        symbol: Symbol(name, SymbolKind.field),
+        isInternal: true,
+      );
+
+  @override
+  BindingString toBindingString(Writer w) {
+    final s = 'late final $name = ${makeValue()};\n';
+    return BindingString(type: BindingStringType.global, string: s);
+  }
+}
+
+String _makeLookupName(String originalName, String? module) =>
+    module == null ? originalName : '$module.$originalName';
+
+String _makeSymbolLookupName(String originalName, String? module) {
+  final mangledName = module == null
+      ? originalName
+      : '_TtC${module.length}$module${originalName.length}$originalName';
+  return 'OBJC_CLASS_\$_$mangledName';
+}
+
+/// A global variable for an ObjC class, loaded via @Native.
+class ObjCClassGlobal extends NoLookUpBinding {
+  final String lookupName;
+  final String symbolLookupName;
+  final Symbol rawSymbol;
+
+  ObjCClassGlobal(String name, String originalName, String? module)
+    : lookupName = _makeLookupName(originalName, module),
+      symbolLookupName = _makeSymbolLookupName(originalName, module),
+      rawSymbol = Symbol('${name}_raw', SymbolKind.field),
+      super(
+        originalName: name,
+        symbol: Symbol(name, SymbolKind.field),
+        isInternal: true,
+      );
+
+  @override
+  BindingString toBindingString(Writer w) {
+    final context = w.context;
+    final type = PointerType(objCObjectType).getCType(context);
+    final nativeAnnotation = makeNativeAnnotation(
+      w,
+      nativeType: type,
+      dartName: rawSymbol.name,
+      nativeSymbolName: symbolLookupName,
+    );
+    final getClass = ObjCBuiltInFunctions.getClass.gen(context);
+    final address =
+        '${context.libs.prefix(ffiImport)}.Native.addressOf<$type>'
+        '(${rawSymbol.name})';
+    final s =
+        '''
+$nativeAnnotation
+external $type ${rawSymbol.name};
+final $name = $getClass("$lookupName", () => $address.cast());
+''';
+    return BindingString(type: BindingStringType.global, string: s);
+  }
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visit(ffiImport);
+    visitor.visit(objcPkgImport);
+    visitor.visit(objCObjectType);
+    visitor.visit(rawSymbol);
+  }
+}
+
+/// A global variable for an ObjC protocol, loaded via @Native.
+class ObjCProtocolGlobal extends NoLookUpBinding {
+  final Symbol loaderSymbol;
+  final String lookupName;
+  final Symbol rawSymbol;
+
+  ObjCProtocolGlobal(
+    String name,
+    String originalName,
+    String? module,
+    this.loaderSymbol,
+  ) : lookupName = _makeLookupName(originalName, module),
+      rawSymbol = Symbol('${name}_raw', SymbolKind.field),
+      super(
+        originalName: name,
+        symbol: Symbol(name, SymbolKind.field),
+        isInternal: true,
+      );
+
+  @override
+  BindingString toBindingString(Writer w) {
+    final context = w.context;
+    final ptrType = PointerType(objCProtocolType).getCType(context);
+    final getProtocol = ObjCBuiltInFunctions.getProtocol.gen(context);
+    final nativeAnnotation = makeNativeAnnotation(
+      w,
+      nativeType: '$ptrType Function()',
+      dartName: rawSymbol.name,
+      nativeSymbolName: loaderSymbol.name,
+    );
+    final s =
+        '''
+$nativeAnnotation
+external $ptrType ${rawSymbol.name}();
+final $name = $getProtocol("$lookupName", ${rawSymbol.name});
+''';
+    return BindingString(type: BindingStringType.global, string: s);
+  }
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visit(ffiImport);
+    visitor.visit(objcPkgImport);
+    visitor.visit(objCProtocolType);
+    visitor.visit(rawSymbol);
+    visitor.visit(loaderSymbol);
+  }
+}
+
+enum ObjCMsgSendVariant {
+  normal(ObjCBuiltInFunctions.msgSendPointer),
+  stret(ObjCBuiltInFunctions.msgSendStretPointer),
+  fpret(ObjCBuiltInFunctions.msgSendFpretPointer);
+
+  final ObjCImport pointer;
+  const ObjCMsgSendVariant(this.pointer);
+
+  static ObjCMsgSendVariant fromReturnType(Type returnType) {
+    if (returnType is Compound && returnType is Struct) {
+      return ObjCMsgSendVariant.stret;
+    } else if (returnType == floatType || returnType == doubleType) {
+      return ObjCMsgSendVariant.fpret;
+    }
+    return ObjCMsgSendVariant.normal;
+  }
+}
+
+class ObjCMsgSendVariantFunc extends NoLookUpBinding {
+  ObjCMsgSendVariant variant;
+  FunctionType type;
+
+  ObjCMsgSendVariantFunc._({
+    required String name,
+    required this.variant,
+    required Type returnType,
+    required List<Parameter> parameters,
+  }) : type = FunctionType(returnType: returnType, parameters: parameters),
+       super(isInternal: true, symbol: Symbol(name, SymbolKind.method));
+
+  @override
+  BindingString toBindingString(Writer w) {
+    final context = w.context;
+    final cType = NativeFunc(type).getCType(context, writeArgumentNames: false);
+    final dartType = type.getFfiDartType(context, writeArgumentNames: false);
+    final pointer = variant.pointer.gen(context);
+
+    final bindingString =
+        '''
+final $name = $pointer.cast<$cType>().asFunction<$dartType>();
+''';
+
+    return BindingString(type: BindingStringType.func, string: bindingString);
+  }
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visit(type);
+    visitor.visit(objcPkgImport);
+  }
+
+  @override
+  void visit(Visitation visitation) =>
+      visitation.visitObjCMsgSendVariantFunc(this);
+}
+
+/// A wrapper around the objc_msgSend function, or the stret or fpret variants.
+///
+/// The [variant] is based purely on the return type of the method.
+///
+/// For the stret and fpret variants, we may need to fall back to the normal
+/// objc_msgSend function at runtime, depending on the ABI. So we emit both the
+/// variant function and the normal function, and decide which to use at runtime
+/// based on the ABI. The result of the ABI check is stored in [useVariants].
+///
+/// This runtime check is complicated by the fact that objc_msgSend_stret has
+/// a different signature than objc_msgSend has for the same method. This is
+/// because objc_msgSend_stret takes a pointer to the return type as its first
+/// arg.
+class ObjCMsgSendFunc extends AstNode with HasLocalScope {
+  final ObjCMsgSendVariant variant;
+  final ObjCImport useVariants;
+
+  // [normalFunc] is always a reference to the normal objc_msgSend function. If
+  // the [variant] is fpret or stret, then [variantFunc] is a reference to the
+  // corresponding variant of the objc_msgSend function, otherwise it's null.
+  late final ObjCMsgSendVariantFunc normalFunc;
+  late final ObjCMsgSendVariantFunc? variantFunc;
+
+  ObjCMsgSendFunc._(
+    String name,
+    Type returnType,
+    List<Parameter> params,
+    this.useVariants,
+  ) : variant = ObjCMsgSendVariant.fromReturnType(returnType) {
+    normalFunc = ObjCMsgSendVariantFunc._(
+      name: name,
+      variant: ObjCMsgSendVariant.normal,
+      returnType: returnType,
+      parameters: _params(params),
+    );
+    switch (variant) {
+      case ObjCMsgSendVariant.normal:
+        variantFunc = null;
+      case ObjCMsgSendVariant.fpret:
+        variantFunc = ObjCMsgSendVariantFunc._(
+          name: '${name}Fpret',
+          variant: variant,
+          returnType: returnType,
+          parameters: _params(params),
+        );
+      case ObjCMsgSendVariant.stret:
+        variantFunc = ObjCMsgSendVariantFunc._(
+          name: '${name}Stret',
+          variant: variant,
+          returnType: voidType,
+          parameters: _params(params, structRetPtr: PointerType(returnType)),
+        );
+    }
+  }
+
+  List<Parameter> _params(List<Parameter> params, {Type? structRetPtr}) {
+    return [
+      if (structRetPtr != null)
+        Parameter(name: 'result', type: structRetPtr, objCConsumed: false),
+      Parameter(
+        name: 'receiver',
+        type: PointerType(objCObjectType),
+        objCConsumed: false,
+      ),
+      Parameter(
+        name: 'sel',
+        type: PointerType(objCSelType),
+        objCConsumed: false,
+      ),
+      ...params,
+    ];
+  }
+
+  bool get isStret => variant == ObjCMsgSendVariant.stret;
+
+  String invoke(
+    Context context,
+    String target,
+    String sel,
+    Iterable<String> params, {
+    String? structRetPtr,
+  }) {
+    final normalCall = _invoke(normalFunc.name, target, sel, params);
+    switch (variant) {
+      case ObjCMsgSendVariant.normal:
+        return normalCall;
+      case ObjCMsgSendVariant.fpret:
+        final fpretCall = _invoke(variantFunc!.name, target, sel, params);
+        return '${useVariants.gen(context)} ? $fpretCall : $normalCall';
+      case ObjCMsgSendVariant.stret:
+        final stretCall = _invoke(
+          variantFunc!.name,
+          target,
+          sel,
+          params,
+          structRetPtr: structRetPtr,
+        );
+        return '${useVariants.gen(context)} ? $stretCall : '
+            '$structRetPtr.ref = $normalCall';
+    }
+  }
+
+  static String _invoke(
+    String name,
+    String target,
+    String sel,
+    Iterable<String> params, {
+    String? structRetPtr,
+  }) {
+    return '''$name(${[?structRetPtr, target, sel, ...params].join(', ')})''';
+  }
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visit(normalFunc);
+    visitor.visit(variantFunc);
+    visitor.visit(objcPkgImport);
+  }
+
+  @override
+  void visit(Visitation visitation) => visitation.visitObjCMsgSendFunc(this);
+}

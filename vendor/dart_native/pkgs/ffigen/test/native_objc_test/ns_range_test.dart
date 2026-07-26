@@ -1,0 +1,74 @@
+// Copyright (c) 2024, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+// Objective C support is only available on mac.
+@TestOn('mac-os')
+library;
+
+import 'dart:io';
+
+import 'package:ffigen/ffigen.dart';
+import 'package:logging/logging.dart';
+import 'package:ffigen/src/header_parser.dart' show parse;
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
+import '../test_utils.dart';
+
+void main() {
+  group('NSRange', () {
+    late final String bindings;
+    setUpAll(() {
+      FfiGenerator(
+        output: Output(
+          dartFile: Uri.file(
+            path.join(
+              packagePathForTests,
+              'test',
+              'native_objc_test',
+              'ns_range_test_bindings.dart',
+            ),
+          ),
+          format: false,
+          style: const DynamicLibraryBindings(
+            wrapperName: 'NSRangeTestObjCLibrary',
+          ),
+        ),
+        headers: Headers(
+          entryPoints: [
+            Uri.file(
+              path.join(
+                packagePathForTests,
+                'test',
+                'native_objc_test',
+                'ns_range_test.m',
+              ),
+            ),
+          ],
+        ),
+        objectiveC: ObjectiveC(
+          interfaces: Interfaces(
+            include: (decl) =>
+                {'SFTranscriptionSegment'}.contains(decl.originalName),
+          ),
+        ),
+      ).generate(logger: createTestLogger());
+      final file = path.join(
+        packagePathForTests,
+        'test',
+        'native_objc_test',
+        'ns_range_test_bindings.dart',
+      );
+      expectNoAnalysisErrors(file);
+      bindings = File(file).readAsStringSync();
+    });
+
+    test('interfaces', () {
+      // Regression test for https://github.com/dart-lang/native/issues/1180.
+      expect(
+        bindings.split('\n'),
+        isNot(contains(matches(RegExp(r'class.*NSRange.*Struct')))),
+      );
+    });
+  });
+}

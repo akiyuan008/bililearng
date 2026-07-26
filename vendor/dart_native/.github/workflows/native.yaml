@@ -1,0 +1,101 @@
+# CI for the native_* packages.
+#
+# Combined into a single workflow so that deps are configured and installed once.
+
+name: native
+permissions: read-all
+
+on:
+  pull_request:
+    # No `branches:` to enable stacked PRs on GitHub.
+    paths:
+      - '.github/workflows/native.yaml'
+      - 'pkgs/code_assets/**'
+      - 'pkgs/data_assets/**'
+      - 'pkgs/ffi/**'
+      - 'pkgs/ffigen/**'
+      - 'pkgs/hooks/**'
+      - 'pkgs/hooks_runner/**'
+      - 'pkgs/json_syntax_generator/**'
+      - 'pkgs/native_test_helpers/**'
+      - 'pkgs/native_toolchain_c/**'
+      - 'pkgs/record_use/**'
+      - 'tool/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/native.yaml'
+      - 'pkgs/code_assets/**'
+      - 'pkgs/data_assets/**'
+      - 'pkgs/ffi/**'
+      - 'pkgs/ffigen/**'
+      - 'pkgs/hooks/**'
+      - 'pkgs/hooks_runner/**'
+      - 'pkgs/json_syntax_generator/**'
+      - 'pkgs/native_test_helpers/**'
+      - 'pkgs/native_toolchain_c/**'
+      - 'pkgs/record_use/**'
+      - 'tool/**'
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        sdk: [dev, stable]
+
+    runs-on: ${{ matrix.os }}-latest
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+        with:
+          sdk: ${{ matrix.sdk }}
+
+      - uses: nttld/setup-ndk@ed92fe6cadad69be94a966a7ee3271275e62f779
+        with:
+          ndk-version: r27
+        if: ${{ matrix.os != 'macos' }}
+
+      - name: Install native toolchains
+        run: sudo apt-get update && sudo apt-get install clang-15 gcc-i686-linux-gnu gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-riscv64-linux-gnu
+        if: ${{ matrix.os == 'ubuntu' }}
+
+      - name: Install native toolchains
+        run: brew install lld
+        if: ${{ matrix.os == 'macos' }}
+
+      - run: dart pub get
+
+      - name: Run pub get, analysis, formatting, generators, tests, and examples.
+        run: dart tool/ci.dart --all --no-apitool ${{ matrix.sdk == 'stable' && '--no-format' || '' }}
+
+      - name: Trust Coveralls tap
+        run: brew trust coverallsapp/coveralls
+        if: ${{ matrix.os == 'macos' }}
+
+      - name: Upload coverage
+        uses: coverallsapp/github-action@0a51d2e0b5417d06e4ecceb534aec87defc53926
+        with:
+          flag-name: native_pkgs_${{ matrix.os }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel: true
+
+  coverage-finished:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload coverage
+        uses: coverallsapp/github-action@0a51d2e0b5417d06e4ecceb534aec87defc53926
+        with:
+          carryforward: 'ffigen,jni,jnigen,native_pkgs_macos,native_pkgs_ubuntu,native_pkgs_windows,objective_c,swift2objc,swiftgen'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true

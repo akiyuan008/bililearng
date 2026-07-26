@@ -1,0 +1,86 @@
+// Copyright (c) 2025, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:io';
+
+// ignore: deprecated_member_use_from_same_package
+export 'overrideable_utils.dart';
+
+/// Replaces any variable names in the path with the corresponding value.
+String substituteVars(String path) {
+  for (final variable in [_xcode, _iosSdk, _macSdk]) {
+    final key = '\$${variable.key}';
+    if (path.contains(key)) {
+      path = path.replaceAll(key, variable.value);
+    }
+  }
+  return path;
+}
+
+class _LazyVariable {
+  _LazyVariable(this.key, this._cmd, this._args);
+  final String key;
+  final String _cmd;
+  final List<String> _args;
+  String? _value;
+  String get value => _value ??= firstLineOfStdout(_cmd, _args);
+}
+
+final _xcode = _LazyVariable('XCODE', 'xcode-select', ['-p']);
+final _iosSdk = _LazyVariable('IOS_SDK', 'xcrun', [
+  '--show-sdk-path',
+  '--sdk',
+  'iphoneos',
+]);
+final _macSdk = _LazyVariable('MACOS_SDK', 'xcrun', [
+  '--show-sdk-path',
+  '--sdk',
+  'macosx',
+]);
+
+String firstLineOfStdout(String cmd, List<String> args) {
+  final result = Process.runSync(cmd, args);
+  if (result.exitCode != 0) {
+    throw Exception(
+      'Command "$cmd ${args.join(' ')}" failed with exit code '
+      '${result.exitCode}.\n'
+      'STDOUT:\n${result.stdout}\n'
+      'STDERR:\n${result.stderr}',
+    );
+  }
+  return (result.stdout as String)
+      .split('\n')
+      .where((line) => line.isNotEmpty)
+      .first;
+}
+
+/// The directory where Xcode's APIs are installed.
+///
+/// This is the result of the command `xcode-select -p`.
+String get xcodePath => _xcode.value;
+
+/// The directory within [xcodePath] where the iOS SDK is installed.
+///
+/// This is the result of the command `xcrun --show-sdk-path --sdk iphoneos`.
+String get iosSdkPath => _iosSdk.value;
+
+/// The directory within [xcodePath] where the macOS SDK is installed.
+///
+/// This is the result of the command `xcrun --show-sdk-path --sdk macosx`.
+String get macSdkPath => _macSdk.value;
+
+/// The directory where Xcode's APIs are installed.
+///
+/// This is the result of the command `xcode-select -p`.
+Uri get xcodeUri => Uri.directory(xcodePath);
+
+/// The directory within [xcodePath] where the iOS SDK is installed.
+///
+/// This is the result of the command `xcrun --show-sdk-path --sdk iphoneos`.
+Uri get iosSdkUri => Uri.directory(iosSdkPath);
+
+/// The directory within [xcodePath] where the macOS SDK is installed.
+///
+/// This is the result of the command `xcrun --show-sdk-path --sdk macosx`.
+Uri get macSdkUri => Uri.directory(macSdkPath);

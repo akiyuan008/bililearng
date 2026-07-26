@@ -1,0 +1,183 @@
+name: PiliPlus
+description: A new Flutter project.
+publish_to: none
+version: 2.1.0+1
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+  flutter: '>=3.38.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  app_links: 7.2.1
+  archive: 4.0.9
+  audio_service:
+    path: vendor/audio_service/audio_service
+  audio_session: 0.2.4
+  battery_plus: 7.1.1
+  brotli: 0.6.0
+  cached_network_image_ce:
+    path: vendor/cached_network_image_ce/cached_network_image
+  canvas_danmaku:
+    path: vendor/canvas_danmaku
+  catcher_2:
+    path: vendor/catcher_2
+  characters: 1.4.1
+  chat_bottom_container:
+    path: vendor/flutter_chat_packages/packages/chat_bottom_container
+  collection: 1.19.1
+  connectivity_plus: 7.3.1
+  cookie_jar: 4.0.9
+  crypto: 3.0.7
+  desktop_webview_window:
+    path: vendor/linux_webview_window
+  device_info_plus: 13.2.0
+  dio: 5.10.0
+  dio_http2_adapter: 2.7.1
+  dlna_dart: 0.1.1
+  dynamic_color: 1.8.1
+  easy_debounce: 2.0.3
+  encrypt: 5.0.3
+  extended_nested_scroll_view:
+    path: vendor/extended_nested_scroll_view
+  file_picker:
+    path: vendor/flutter_file_picker
+  fixnum: 1.1.1
+  fl_chart: 1.2.0
+  flex_seed_scheme: 4.0.1
+  flutter_displaymode: 0.7.0
+  flutter_html: 3.0.0
+  flutter_inappwebview: 6.1.5
+  flutter_smart_dialog:
+    path: vendor/flutter_smart_dialog
+  flutter_sortable_wrap:
+    path: vendor/flutter_sortable_wrap
+  flutter_svg: 2.3.0
+  flutter_volume_controller: 2.0.1
+  font_awesome_flutter:
+    path: vendor/font_awesome_flutter
+  get:
+    path: vendor/getx
+  hive_ce: 2.19.3
+  html: 0.15.6
+  http2: 2.3.1
+  image_cropper: 12.2.1
+  image_picker: 1.2.3
+  intl: 0.20.2
+  jni: 1.0.0
+  json_annotation: 4.12.0
+  live_photo_maker: 0.0.6
+  logger: 2.7.0
+  material_color_utilities: 0.13.0
+  material_design_icons_flutter:
+    path: vendor/material_design_icons_flutter
+  material_new_shapes: 1.0.0
+  media_kit: 1.1.11
+  media_kit_libs_video: 1.0.5
+  media_kit_video: 1.2.5
+  mime: 2.0.0
+  native_device_orientation:
+    path: vendor/flutter_native_device_orientation
+  package_info_plus: 10.2.1
+  path: 1.9.1
+  path_provider: 2.1.6
+  permission_handler_android: 13.0.1
+  permission_handler_apple: 9.4.10
+  permission_handler_platform_interface: 4.3.0
+  pretty_qr_code: 3.6.0
+  protobuf: 6.0.0
+  re_highlight: 0.0.3
+  saver_gallery: 5.1.0
+  screen_brightness_platform_interface: 2.1.2
+  screen_retriever: 0.2.2
+  share_plus: 13.3.0
+  stream_transform: 2.1.1
+  super_sliver_list:
+    path: vendor/super_sliver_list
+  synchronized: 3.4.1+1
+  tray_manager: 0.5.3
+  url_launcher: 6.3.2
+  uuid: 4.6.0
+  vector_math: 2.2.0
+  wakelock_plus: 1.7.0
+  waterfall_flow: 3.1.1
+  web_socket_channel: 3.0.3
+  webdav_client:
+    path: vendor/webdav_client
+  win32: 6.3.0
+  window_manager:
+    path: vendor/window_manager/packages/window_manager
+dependency_overrides:
+  flutter_inappwebview_android:
+    path: vendor/flutter_inappwebview/flutter_inappwebview_android
+  flutter_inappwebview_windows:
+    path: vendor/flutter_inappwebview/flutter_inappwebview_windows
+  media_kit:
+    path: vendor/media-kit/media_kit
+  media_kit_libs_android_video:
+    path: vendor/media-kit/libs/android/media_kit_libs_android_video
+  media_kit_libs_ios_video:
+    path: vendor/media-kit/libs/ios/media_kit_libs_ios_video
+  media_kit_libs_video:
+    path: vendor/media-kit/libs/universal/media_kit_libs_video
+  media_kit_libs_windows_video:
+    path: vendor/media-kit/libs/windows/media_kit_libs_windows_video
+  media_kit_native_event_loop:
+    path: vendor/media-kit/media_kit_native_event_loop
+  media_kit_video:
+    path: vendor/media-kit/media_kit_video
+  cached_network_image_ce:
+    path: vendor/cached_network_image_ce/cached_network_image
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: 2.15.1
+  flutter_launcher_icons: 0.14.4
+  flutter_lints: 6.0.0
+  flutter_native_splash: 2.4.8
+  jnigen:
+    path: vendor/dart_native/pkgs/jnigen
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: assets/images/logo/logo_2.png
+  image_path_android: assets/images/logo/logo_2.png
+  image_path_ios: assets/images/logo/logo.png
+  adaptive_icon_background: '#ffffff'
+  adaptive_icon_foreground: assets/images/logo/logo_2.png
+  adaptive_icon_monochrome: assets/images/logo/logo_2.png
+  macos:
+    generate: true
+    image_path: assets/images/logo/logo.png
+flutter_native_splash:
+  android_12:
+    color: '#ffffff'
+    color_dark: '#212121'
+  color: '#ffffff'
+  color_dark: '#212121'
+  image: assets/images/logo/logo_2.png
+  image_dark: assets/images/logo/logo_2.png
+flutter:
+  uses-material-design: true
+  assets:
+  - path: assets/images/
+  - path: assets/images/logo/
+  - path: assets/images/logo/ico/
+    platforms:
+    - windows
+  - path: assets/images/logo/desktop/
+    platforms:
+    - linux
+    - macos
+  - path: assets/images/live/
+  - path: assets/images/paycoins/
+  - path: assets/shaders/
+  fonts:
+  - family: digital_id_num
+    fonts:
+    - asset: assets/fonts/digital_id_num.ttf
+  - family: custom_icon
+    fonts:
+    - asset: assets/fonts/custom_icon.ttf

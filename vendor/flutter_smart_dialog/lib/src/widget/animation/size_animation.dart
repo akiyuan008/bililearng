@@ -1,0 +1,35 @@
+import 'package:flutter/material.dart';
+
+class SizeAnimation extends StatelessWidget {
+  const SizeAnimation({
+    super.key,
+    required this.controller,
+    required this.alignment,
+    required this.child,
+  });
+
+  final AnimationController controller;
+
+  final Alignment alignment;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizeTransition(
+      axis: _handleAxis(),
+      sizeFactor: controller,
+      child: child,
+    );
+  }
+
+  Axis _handleAxis() {
+    var axis = Axis.vertical;
+
+    if (alignment == Alignment.centerLeft ||
+        alignment == Alignment.centerRight) {
+      axis = Axis.horizontal;
+    }
+    return axis;
+  }
+}

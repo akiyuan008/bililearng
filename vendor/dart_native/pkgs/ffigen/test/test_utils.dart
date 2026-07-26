@@ -1,0 +1,398 @@
+// Copyright (c) 2020, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:ffi';
+import 'dart:io';
+import 'package:ffi/ffi.dart';
+
+import 'package:ffigen/src/code_generator.dart';
+import 'package:ffigen/src/code_generator/scope.dart';
+import 'package:ffigen/src/code_generator/utils.dart';
+import 'package:ffigen/src/config_provider/config.dart';
+import 'package:ffigen/src/config_provider/utils.dart';
+import 'package:ffigen/src/config_provider/yaml_config.dart';
+import 'package:ffigen/src/context.dart';
+import 'package:ffigen/src/visitor/ast.dart';
+import 'package:ffigen/src/visitor/visitor.dart';
+import 'package:logging/logging.dart';
+import 'package:package_config/package_config_types.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
+import 'package:yaml/yaml.dart' as yaml;
+
+export 'package:ffigen/src/config_provider/utils.dart';
+
+Context testContext([FfiGenerator? generator]) {
+  final tmpDir = (Directory(
+    absPath(path.join('test', '.temp test output')),
+  )..createSync(recursive: true)).createTempSync();
+  return Context(
+    createTestLogger(),
+    generator ?? FfiGenerator(output: Output(dartFile: Uri.file('unused'))),
+    tmpDir: tmpDir.path,
+  );
+}
+
+Logger createTestLogger({
+  List<String>? capturedMessages,
+  Level level = Level.WARNING,
+}) => Logger.detached('')
+  ..level = level
+  ..onRecord.listen((record) {
+    printOnFailure('${record.level.name}: ${record.time}: ${record.message}');
+    capturedMessages?.add(record.message);
+  });
+
+extension LibraryTestExt on Library {
+  /// Get a [Binding]'s generated string with a given name.
+  String getBindingAsString(String name) =>
+      getBinding(name).toBindingString(writer).string;
+
+  /// Get a [Binding] with a given name.
+  Binding getBinding(String name) {
+    try {
+      final b = bindings.firstWhere((element) => element.name == name);
+      return b;
+    } catch (e) {
+      throw NotFoundException("Binding '$name' not found.");
+    }
+  }
+
+  /// Runs a fake version of the Symbol renaming step that usually happens
+  /// during the transformation pipeline. The Symbol names aren't actually
+  /// renamed to avoid collisions, the name is just filled from oldName without
+  /// regard for the other names in the namespace. This lets us access the names
+  /// for testing, without running whole transformation pipeline.
+  void forceFillNamesForTesting() {
+    visit(context, _FakeRenamer(), bindings);
+    context.extraSymbols = (
+      wrapperClassName: Symbol('NativeLibrary', SymbolKind.klass)
+        ..forceFillForTesting(),
+      lookupFuncName: Symbol('_lookup', SymbolKind.field)
+        ..forceFillForTesting(),
+      symbolAddressVariableName: Symbol('addresses', SymbolKind.field)
+        ..forceFillForTesting(),
+    );
+    context.libs.forceFillForTesting();
+    context.rootScope.fillNames();
+    context.rootObjCScope.fillNames();
+  }
+}
+
+class _FakeRenamer extends Visitation {
+  @override
+  void visitSymbol(Symbol node) => node.forceFillForTesting();
+
+  @override
+  void visitBinding(Binding node) {
+    if (node is HasLocalScope) {
+      (node as HasLocalScope).localScope = Scope.createRoot('test')
+        ..fillNames();
+    }
+    node.visitChildren(visitor);
+  }
+}
+
+// Remove '\r' for Windows compatibility, then apply user's normalizer.
+String _normalizeGeneratedCode(
+  String generated,
+  String Function(String)? codeNormalizer,
+) {
+  final noCR = generated.replaceAll('\r', '');
+  if (codeNormalizer == null) return noCR;
+  return codeNormalizer(noCR);
+}
+
+/// Generates actual file using library and tests using [expect] with expected.
+///
+/// This will not delete the actual debug file incase [expect] throws an error.
+void matchLibraryWithExpected(
+  Context context,
+  Library library,
+  String pathForActual,
+  List<String> pathToExpected, {
+  String Function(String)? codeNormalizer,
+  bool format = true,
+  bool Function(String, String)? verify,
+}) {
+  matchFileWithExpected(
+    context: context,
+    pathForActual: pathForActual,
+    pathToExpected: pathToExpected,
+    fileWriter: (File file) => library.generateFile(file, format: format),
+    codeNormalizer: codeNormalizer,
+    verify: verify,
+  );
+}
+
+/// Generates actual file using library and tests using [expect] with expected.
+///
+/// This will not delete the actual debug file incase [expect] throws an error.
+void matchLibrarySymbolFileWithExpected(
+  Context context,
+  Library library,
+  String pathForActual,
+  List<String> pathToExpected,
+  String importPath, {
+  bool Function(String, String)? verify,
+}) {
+  matchFileWithExpected(
+    context: context,
+    pathForActual: pathForActual,
+    pathToExpected: pathToExpected,
+    fileWriter: (File file) {
+      if (!library.writer.canGenerateSymbolOutput) library.generate();
+      library.generateSymbolOutputFile(file, importPath);
+    },
+    verify: verify,
+  );
+}
+
+/// Generates ObjC file using library and tests using [expect] with expected.
+///
+/// This will not delete the actual ObjC file incase [expect] throws an error.
+void matchObjCFileWithExpected(
+  Context context,
+  Library library,
+  String pathForActual,
+  List<String> pathToExpected, {
+  bool Function(String, String)? verify,
+}) {
+  matchFileWithExpected(
+    context: context,
+    pathForActual: pathForActual,
+    pathToExpected: pathToExpected,
+    fileWriter: (File file) => library.generateObjCFile(file),
+    verify: verify,
+  );
+}
+
+/// Generates C++ file using library and tests using [expect] with expected.
+///
+/// This will not delete the actual C++ file incase [expect] throws an error.
+void matchCppFileWithExpected(
+  Context context,
+  Library library,
+  String pathForActual,
+  List<String> pathToExpected, {
+  bool Function(String, String)? verify,
+}) {
+  matchFileWithExpected(
+    context: context,
+    pathForActual: pathForActual,
+    pathToExpected: pathToExpected,
+    fileWriter: (File file) => library.generateCppFile(file),
+    verify: verify,
+  );
+}
+
+/// Generates actual record-use mapping file using library and tests using
+/// [expect] with expected.
+///
+/// This will not delete the actual debug file incase [expect] throws an error.
+void matchRecordUseMappingWithExpected(
+  Context context,
+  Library library,
+  String pathForActual,
+  List<String> pathToExpected, {
+  String Function(String)? codeNormalizer,
+  bool format = true,
+  bool Function(String, String)? verify,
+}) {
+  matchFileWithExpected(
+    context: context,
+    pathForActual: pathForActual,
+    pathToExpected: pathToExpected,
+    fileWriter: (File file) =>
+        library.generateRecordUseMappingFile(file, format: format),
+    codeNormalizer: codeNormalizer,
+    verify: verify,
+  );
+}
+
+final updateExpectations = Platform.environment['UPDATE'] == 'true';
+
+/// Transforms a repo relative path to an absolute path.
+String absPath(String p) => path.join(packagePathForTests, p);
+
+/// Returns a path to a config yaml in a unit test.
+String configPath(String directory, String file) =>
+    absPath(configPathForTest(directory, file));
+
+/// Generates actual file using [fileWriter] and compares it with the expected
+/// file content at [pathToExpected].
+///
+/// This will not delete the actual debug file incase [expect] throws an error.
+void matchFileWithExpected({
+  required Context context,
+  required String pathForActual,
+  required List<String> pathToExpected,
+  required void Function(File file) fileWriter,
+  String Function(String)? codeNormalizer,
+  bool Function(String expected, String actual)? verify,
+}) {
+  final expectedPath = path.joinAll([packagePathForTests, ...pathToExpected]);
+  final expectedFile = File(expectedPath);
+
+  final tmpDirPath = context.tmpDir;
+  final actualPath = path.join(tmpDirPath, pathForActual);
+  final actualFile = File(actualPath);
+
+  verify ??= (expected, actual) => expected == actual;
+
+  // Generate the actual file in the expected location so that the generated
+  // relative import paths are correct. In case the expected and actual files
+  // have the same name, move the expected file to a backup location first.
+  final backupFile = File(path.join(tmpDirPath, '$pathForActual.backup'));
+  if (expectedFile.existsSync()) {
+    expectedFile.renameSync(backupFile.path);
+  }
+  fileWriter(expectedFile);
+
+  // Move the expected and actual files to their correct locations.
+  if (expectedFile.existsSync()) {
+    expectedFile.renameSync(actualPath);
+  }
+  if (backupFile.existsSync()) {
+    backupFile.renameSync(expectedPath);
+  }
+
+  if (updateExpectations) {
+    print('Updating expectations: ${path.relative(expectedPath)}');
+    if (actualFile.existsSync()) {
+      actualFile.copySync(expectedPath);
+    } else if (expectedFile.existsSync()) {
+      expectedFile.deleteSync();
+    }
+  }
+
+  final actualFileExists = actualFile.existsSync();
+  final actualContent = actualFileExists
+      ? _normalizeGeneratedCode(actualFile.readAsStringSync(), codeNormalizer)
+      : null;
+
+  final expectedFileExists = expectedFile.existsSync();
+  final expectedContent = expectedFileExists
+      ? _normalizeGeneratedCode(expectedFile.readAsStringSync(), codeNormalizer)
+      : null;
+
+  var matches = false;
+  Object? verifyException;
+  try {
+    matches = ((expectedContent == null) && (actualContent == null))
+        ? true
+        : ((expectedContent == null) || (actualContent == null))
+        ? false
+        : verify(expectedContent, actualContent);
+  } catch (e) {
+    verifyException = e;
+  }
+
+  if (!matches) {
+    final String diff;
+    if (expectedFileExists && actualFileExists) {
+      diff = Process.runSync('git', [
+        'diff',
+        '--no-index',
+        '--color=always',
+        expectedPath,
+        actualPath,
+      ]).stdout.toString();
+    } else if (expectedFileExists) {
+      diff = "Expected file exists, but actual file doesn't";
+    } else {
+      diff = "Expected file doesn't exist, but actual file does";
+    }
+
+    final message = verifyException != null
+        ? 'Verification failed: $verifyException\n'
+        : 'Expected output does not match actual output:';
+
+    fail('''
+$diff
+
+$message
+  ${path.relative(expectedPath)}
+      vs
+  ${path.relative(actualPath)}
+
+If the diffs are expected, rerun with UPDATE=true
+''');
+  }
+
+  expectNoAnalysisErrors(expectedPath);
+
+  if (actualFileExists) {
+    actualFile.deleteSync();
+  }
+}
+
+void expectNoAnalysisErrors(String file) {
+  if (!file.endsWith('.dart')) return;
+  Process.runSync(dartExecutable, [
+    'pub',
+    'get',
+  ], workingDirectory: path.dirname(file));
+  final result = Process.runSync(dartExecutable, [
+    'analyze',
+    file,
+    '--fatal-infos',
+  ], workingDirectory: path.dirname(file));
+  if (result.exitCode != 0) print(result.stdout);
+  expect(result.exitCode, 0);
+}
+
+class NotFoundException implements Exception {
+  final String message;
+  NotFoundException(this.message);
+
+  @override
+  String toString() {
+    return message;
+  }
+}
+
+FfiGenerator testConfig(String yamlBody, {String? filename, Logger? logger}) {
+  return YamlConfig.fromYaml(
+    yaml.loadYaml(yamlBody) as yaml.YamlMap,
+    logger ?? createTestLogger(),
+    filename: filename,
+    packageConfig: PackageConfig([
+      Package(
+        'shared_bindings',
+        Uri.file(
+          path.join(packagePathForTests, 'example', 'shared_bindings', 'lib/'),
+        ),
+      ),
+    ]),
+  ).configAdapter();
+}
+
+FfiGenerator testConfigFromPath(String path, {Logger? logger}) {
+  final file = File(path);
+  final yamlBody = file.readAsStringSync();
+  return testConfig(yamlBody, filename: path, logger: logger);
+}
+
+bool isFlutterTester = Platform.resolvedExecutable.contains('flutter_tester');
+
+final _executeInternalCommand = () {
+  final dylib = DynamicLibrary.process();
+  if (dylib.providesSymbol('Dart_ExecuteInternalCommand')) {
+    return dylib
+        .lookup<NativeFunction<Void Function(Pointer<Char>, Pointer<Void>)>>(
+          'Dart_ExecuteInternalCommand',
+        )
+        .asFunction<void Function(Pointer<Char>, Pointer<Void>)>();
+  }
+  return null;
+}();
+
+bool canDoGC = _executeInternalCommand != null;
+
+void doGC() {
+  final gcNow = 'gc-now'.toNativeUtf8();
+  _executeInternalCommand!(gcNow.cast(), nullptr);
+  calloc.free(gcNow);
+}

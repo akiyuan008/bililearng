@@ -1,0 +1,60 @@
+// Copyright (c) 2024, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+// Objective C support is only available on mac.
+@TestOn('mac-os')
+import 'dart:ffi';
+import 'dart:io';
+
+import 'package:ffi/ffi.dart';
+import 'package:ffigen/ffigen.dart';
+import 'package:ffigen/src/config_provider/config.dart';
+import 'package:ffigen/src/config_provider/config_types.dart';
+import 'package:ffigen/src/header_parser.dart' show parse;
+import 'package:logging/logging.dart';
+import 'package:path/path.dart' as path;
+import 'package:pub_semver/pub_semver.dart';
+import 'package:test/test.dart';
+import '../test_utils.dart';
+import 'util.dart';
+
+void main() {
+  group('method filtering', () {
+    group('no version info', () {
+      late final String bindings;
+      setUpAll(() {
+        final config = testConfigFromPath(
+          path.join(
+            packagePathForTests,
+            'test',
+            'native_objc_test',
+            'method_filtering_config.yaml',
+          ),
+        );
+        bindings = parse(testContext(config)).generate();
+      });
+
+      test('interfaces', () {
+        expect(bindings, contains('MethodFilteringTestInterface'));
+        expect(bindings, contains('includedStaticMethod'));
+        expect(bindings, contains('includedInstanceMethod'));
+        expect(bindings, contains('includedProperty'));
+        expect(bindings, isNot(contains('excludedStaticMethod')));
+        expect(bindings, isNot(contains('excludedInstanceMethod')));
+        expect(bindings, isNot(contains('excludedProperty')));
+      });
+
+      test('protocols', () {
+        expect(bindings, contains('MethodFilteringTestProtocol'));
+        expect(bindings, contains('includedProtocolMethod'));
+        expect(bindings, isNot(contains('excludedProtocolMethod')));
+      });
+
+      test('transitive deps', () {
+        expect(bindings, isNot(contains('TransitiveInterface')));
+        expect(bindings, isNot(contains('someTransitiveMethod')));
+      });
+    });
+  });
+}

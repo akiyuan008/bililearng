@@ -1,0 +1,42 @@
+// Copyright (c) 2024, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:developer';
+
+import '../../config.dart';
+import '../_core/json.dart';
+import '../_core/parsed_symbolgraph.dart';
+
+ParsedRelationsMap parseRelationsMap(InputConfig source, Json symbolgraphJson) {
+  final ParsedRelationsMap relationsMap;
+
+  relationsMap = {};
+
+  for (final relationJson in symbolgraphJson['relationships']) {
+    final relationKindString = relationJson['kind'].get<String>();
+    final relationKind = ParsedRelationKind.fromString(relationKindString);
+
+    if (relationKind == null) {
+      log('Relation of kind $relationKindString is not supported. Skipping it');
+      continue;
+    }
+
+    final sourceId = relationJson['source'].get<String>();
+    final targetId = relationJson['target'].get<String>();
+
+    final relation = ParsedRelation(
+      source: source,
+      kind: relationKind,
+      sourceId: sourceId,
+      targetId: targetId,
+      json: relationJson,
+    );
+
+    for (final id in [sourceId, targetId]) {
+      (relationsMap[id] ??= {})[relation.json.toString()] = relation;
+    }
+  }
+
+  return relationsMap;
+}

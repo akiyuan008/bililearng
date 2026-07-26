@@ -1,0 +1,253 @@
+// Copyright (c) 2022, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import '../code_generator.dart';
+import '../context.dart';
+import '../visitor/ast.dart';
+import 'local_variables.dart';
+
+/// Represents a pointer.
+class PointerType extends Type {
+  final Type child;
+
+  PointerType._(this.child);
+
+  factory PointerType(Type child) {
+    if (child == objCObjectType) {
+      return ObjCObjectPointer();
+    } else if (child == objCBlockType) {
+      return ObjCBlockPointer();
+    }
+    return PointerType._(child);
+  }
+
+  @override
+  Type get baseType => child.baseType;
+
+  @override
+  String getCType(Context context) =>
+      '${context.libs.prefix(ffiImport)}.Pointer<${child.getCType(context)}>';
+
+  @override
+  String getNativeType(Context context, {String varName = ''}) =>
+      '${child.getNativeType(context)}* $varName';
+
+  // Both the C type and the FFI Dart type are 'Pointer<$cType>'.
+  @override
+  bool get sameFfiDartAndCType => true;
+
+  @override
+  String toString() => '$child*';
+
+  @override
+  String cacheKey() => '${child.cacheKey()}*';
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visit(child);
+    visitor.visit(ffiImport);
+  }
+
+  @override
+  void visit(Visitation visitation) => visitation.visitPointerType(this);
+
+  @override
+  bool isSupertypeOf(Type other) {
+    other = other.typealiasType;
+    if (other is PointerType) {
+      return child.isSupertypeOf(other.child);
+    }
+    return false;
+  }
+}
+
+/// Represents a constant array, which has a fixed size.
+class ConstantArray extends PointerType {
+  final int length;
+  final bool useArrayType;
+
+  ConstantArray(this.length, Type child, {required this.useArrayType})
+    : super._(child);
+
+  @override
+  Type get baseArrayType => child.baseArrayType;
+
+  @override
+  bool get isIncompleteCompound => baseArrayType.isIncompleteCompound;
+
+  @override
+  String getNativeType(Context context, {String varName = ''}) =>
+      '${child.getNativeType(context)} $varName[$length]';
+
+  @override
+  String toString() => '$child[$length]';
+
+  @override
+  String cacheKey() => '${child.cacheKey()}[$length]';
+
+  @override
+  String getCType(Context context) {
+    if (useArrayType) {
+      final lib = context.libs.prefix(ffiImport);
+      return '$lib.Array<${child.getCType(context)}>';
+    }
+
+    return super.getCType(context);
+  }
+}
+
+/// Represents an incomplete array, which has an unknown size.
+class IncompleteArray extends PointerType {
+  IncompleteArray(super.child) : super._();
+
+  @override
+  Type get baseArrayType => child.baseArrayType;
+
+  @override
+  String getNativeType(Context context, {String varName = ''}) =>
+      '${child.getNativeType(context)}* $varName';
+
+  @override
+  String toString() => '$child[]';
+
+  @override
+  String cacheKey() => '${child.cacheKey()}[]';
+}
+
+/// A pointer to an Objective C object.
+class ObjCObjectPointer extends PointerType {
+  factory ObjCObjectPointer() => _inst;
+
+  static final _inst = ObjCObjectPointer._();
+  ObjCObjectPointer.__(super.child) : super._();
+  ObjCObjectPointer._() : super._(objCObjectType);
+
+  @override
+  String getDartType(Context context) =>
+      '${context.libs.prefix(objcPkgImport)}.ObjCObject';
+
+  @override
+  String getNativeType(Context context, {String varName = ''}) => 'id $varName';
+
+  @override
+  bool get sameDartAndCType => false;
+
+  @override
+  bool get sameDartAndFfiDartType => false;
+
+  @override
+  String convertDartTypeToFfiDartType(
+    Context context,
+    String value, {
+    required bool objCRetain,
+    required bool objCAutorelease,
+    required LocalVariables localVariables,
+  }) => ObjCInterface.generateGetId(
+    context,
+    value,
+    objCRetain,
+    objCAutorelease,
+    localVariables,
+  );
+
+  @override
+  String convertFfiDartTypeToDartType(
+    Context context,
+    String value, {
+    required bool objCRetain,
+    String? objCEnclosingClass,
+  }) => '${getDartType(context)}($value, retain: $objCRetain, release: true)';
+
+  @override
+  String? generateRetain(String value) =>
+      '(__bridge id)(__bridge_retained void*)($value)';
+
+  @override
+  bool isSupertypeOf(Type other) {
+    other = other.typealiasType;
+    // id/Object* is a supertype of all ObjC objects and blocks.
+    return other is ObjCObjectPointer ||
+        other is ObjCInterface ||
+        other is ObjCBlock;
+  }
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visit(objcPkgImport);
+  }
+}
+
+/// A pointer to an Objective C block.
+class ObjCBlockPointer extends ObjCObjectPointer {
+  factory ObjCBlockPointer() => _inst;
+
+  static final _inst = ObjCBlockPointer._();
+  ObjCBlockPointer._() : super.__(objCBlockType);
+
+  @override
+  String getDartType(Context context) =>
+      '${context.libs.prefix(objcPkgImport)}.ObjCBlockBase';
+
+  @override
+  String? generateRetain(String value) => 'objc_retainBlock($value)';
+
+  @override
+  bool isSupertypeOf(Type other) {
+    other = other.typealiasType;
+    return other is ObjCBlockPointer || other is ObjCBlock;
+  }
+}
+
+/// A pointer to an Objective C object with protocols.
+class ObjCObjectPointerWithProtocols extends ObjCObjectPointer {
+  List<ObjCProtocol> protocols;
+
+  ObjCObjectPointerWithProtocols(this.protocols)
+    : assert(protocols.isNotEmpty),
+      super._();
+
+  @override
+  String getDartType(Context context) => protocols.first.getDartType(context);
+
+  @override
+  bool isSupertypeOf(Type other) {
+    other = other.typealiasType;
+    if (other is ObjCObjectPointerWithProtocols) {
+      // The "correct" logic would be to return true if each of our protocols
+      // was a supertype of one of the other's protocols. But this method is
+      // designed to reflect the subtyping rules of the *Dart bindings*, not the
+      // ObjC types. So since the codegen just uses the first protocol, we do
+      // the same here.
+      return protocols.first.isSupertypeOf(other.protocols.first);
+    }
+    return false;
+  }
+
+  @override
+  String toString() => 'id<${protocols.join(', ')}>';
+
+  @override
+  String cacheKey() => 'id<${protocols.map((p) => p.cacheKey()).join(', ')}>';
+
+  @override
+  String convertFfiDartTypeToDartType(
+    Context context,
+    String value, {
+    required bool objCRetain,
+    String? objCEnclosingClass,
+  }) => protocols.first.convertFfiDartTypeToDartType(
+    context,
+    value,
+    objCRetain: objCRetain,
+    objCEnclosingClass: objCEnclosingClass,
+  );
+
+  @override
+  void visitChildren(Visitor visitor) {
+    super.visitChildren(visitor);
+    visitor.visitAll(protocols);
+  }
+}

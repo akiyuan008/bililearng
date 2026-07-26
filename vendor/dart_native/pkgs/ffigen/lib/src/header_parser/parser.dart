@@ -1,0 +1,302 @@
+// Copyright (c) 2020, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:ffi';
+import 'dart:io';
+
+import 'package:ffi/ffi.dart';
+import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
+
+import '../code_generator.dart';
+import '../code_generator/scope.dart';
+import '../config_provider.dart';
+import '../config_provider/utils.dart';
+import '../context.dart';
+import '../strings.dart' as strings;
+import '../visitor/apply_config_filters.dart';
+import '../visitor/ast.dart';
+import '../visitor/copy_methods_from_super_type.dart';
+import '../visitor/create_scopes.dart';
+import '../visitor/fill_method_dependencies.dart';
+import '../visitor/find_symbols.dart';
+import '../visitor/find_transitive_deps.dart';
+import '../visitor/fix_overridden_methods.dart';
+import '../visitor/list_bindings.dart';
+import '../visitor/mark_imports.dart';
+import '../visitor/opaque_compounds.dart';
+import '../visitor/sorter.dart';
+import 'clang_bindings/clang_bindings.dart' as clang_types;
+import 'sub_parsers/macro_parser.dart';
+import 'translation_unit_parser.dart';
+import 'utils.dart';
+
+/// Main entrypoint for header_parser.
+Library parse(Context context) => Library.fromContext(
+  bindings: transformBindings(parseToBindings(context), context),
+  context: context,
+);
+
+// =============================================================================
+//           BELOW FUNCTIONS ARE MEANT FOR INTERNAL USE AND TESTING
+// =============================================================================
+
+/// Parses source files and returns the bindings.
+List<Binding> parseToBindings(Context context) {
+  final index = clang.clang_createIndex(0, 0);
+  final config = context.config;
+
+  Pointer<Pointer<Utf8>> clangCmdArgs = nullptr;
+  final compilerOpts = overrideCompilerOpts(<String>[
+    // Add compiler opt for comment parsing for clang based on config.
+    if (config.output.commentType.length != CommentLength.none &&
+        config.output.commentType.style == CommentStyle.any)
+      strings.fparseAllComments,
+
+    // If the config targets Objective C, add a compiler opt for it.
+    if (config.objectiveC != null) ...[
+      ...strings.clangLangObjC,
+      ..._findObjectiveCSysroot(),
+    ],
+
+    // Add the user options last so they can override any other options.
+    ...context.compilerOpts,
+  ]);
+
+  context.logger.fine('CompilerOpts used: $compilerOpts');
+  clangCmdArgs = createDynamicStringArray(compilerOpts);
+  final cmdLen = compilerOpts.length;
+
+  // Contains all bindings. A set ensures we never have duplicates.
+  final bindings = <Binding>{};
+
+  // Log all headers for user.
+  context.logger.info('Input Headers: ${config.headers.entryPoints}');
+
+  final tuList = <Pointer<clang_types.CXTranslationUnitImpl>>[];
+
+  // Parse all translation units from entry points.
+  for (final headerLocationUri in config.headers.entryPoints) {
+    final headerLocation = headerLocationUri.toFilePath();
+    context.logger.fine('Creating TranslationUnit for header: $headerLocation');
+
+    final tu = clang.clang_parseTranslationUnit(
+      index,
+      headerLocation.toNativeUtf8().cast(),
+      clangCmdArgs.cast(),
+      cmdLen,
+      nullptr,
+      0,
+      clang_types.CXTranslationUnit_Flags.CXTranslationUnit_SkipFunctionBodies |
+          clang_types
+              .CXTranslationUnit_Flags
+              .CXTranslationUnit_DetailedPreprocessingRecord |
+          clang_types
+              .CXTranslationUnit_Flags
+              .CXTranslationUnit_IncludeAttributedTypes,
+    );
+
+    if (tu == nullptr) {
+      context.logger.severe(
+        "Skipped header/file: $headerLocation, couldn't parse source.",
+      );
+      // Skip parsing this header.
+      continue;
+    }
+
+    logTuDiagnostics(tu, context, headerLocation);
+    tuList.add(tu);
+  }
+
+  if (context.hasSourceErrors) {
+    context.logger.warning(
+      'The compiler found warnings/errors in source files.',
+    );
+    context.logger.warning('This will likely generate invalid bindings.');
+    if (config.headers.ignoreSourceErrors) {
+      context.logger.warning(
+        'Ignored source errors. (User supplied --ignore-source-errors)',
+      );
+    } else if (config.objectiveC != null) {
+      context.logger.warning('Ignored source errors. (ObjC)');
+    } else {
+      context.logger.severe(
+        'Skipped generating bindings due to errors in source files. See https://github.com/dart-lang/native/blob/main/pkgs/ffigen/doc/errors.md.',
+      );
+      exit(1);
+    }
+  }
+
+  final tuCursors = tuList.map(
+    (tu) => clang.clang_getTranslationUnitCursor(tu),
+  );
+
+  // Build usr to CXCusror map from translation units.
+  for (final rootCursor in tuCursors) {
+    buildUsrCursorDefinitionMap(context, rootCursor);
+  }
+
+  // Parse definitions from translation units.
+  for (final rootCursor in tuCursors) {
+    bindings.addAll(parseTranslationUnit(context, rootCursor));
+  }
+
+  // Dispose translation units.
+  for (final tu in tuList) {
+    clang.clang_disposeTranslationUnit(tu);
+  }
+
+  // Add all saved unnamed enums.
+  bindings.addAll(context.unnamedEnumConstants);
+
+  // Parse all saved macros.
+  bindings.addAll(parseSavedMacros(context));
+
+  clangCmdArgs.dispose(cmdLen);
+  clang.clang_disposeIndex(index);
+  return bindings.toList();
+}
+
+List<String> _findObjectiveCSysroot() => [
+  '-isysroot',
+  firstLineOfStdout('xcrun', ['--show-sdk-path']),
+];
+
+@visibleForTesting
+List<Binding> transformBindings(List<Binding> rawBindings, Context context) {
+  final config = context.config;
+
+  final allBindings = visit(
+    context,
+    FindTransitiveDepsVisitation(),
+    rawBindings,
+  ).transitives;
+
+  visit(context, CopyMethodsFromSuperTypesVisitation(), allBindings);
+  visit(context, FixOverriddenMethodsVisitation(context), allBindings);
+
+  final applyConfigFiltersVisitation = ApplyConfigFiltersVisitation(config);
+  visit(context, applyConfigFiltersVisitation, allBindings);
+  final directlyIncluded = applyConfigFiltersVisitation.directlyIncluded;
+  final included = directlyIncluded.union(
+    applyConfigFiltersVisitation.indirectlyIncluded,
+  );
+
+  final byValueCompounds = visit(
+    context,
+    FindByValueCompoundsVisitation(),
+    FindByValueCompoundsVisitation.rootNodes(included),
+  ).byValueCompounds;
+  visit(
+    context,
+    ClearOpaqueCompoundMembersVisitation(config, byValueCompounds, included),
+    allBindings,
+  );
+
+  final transitives = visit(
+    context,
+    FindTransitiveDepsVisitation(),
+    included,
+  ).transitives;
+  final directTransitives = visit(
+    context,
+    FindDirectTransitiveDepsVisitation(config, included, directlyIncluded),
+    included,
+  ).directTransitives;
+
+  final semiFinalBindings = visit(
+    context,
+    ListBindingsVisitation(config, included, transitives, directTransitives),
+    included,
+  ).bindings;
+  final finalBindings = visit(
+    context,
+    FillMethodDependenciesVisitation(context, semiFinalBindings),
+    semiFinalBindings,
+  ).finalBindings;
+  visit(context, MarkBindingsVisitation(finalBindings), allBindings);
+  visit(context, MarkImportsVisitation(context), finalBindings);
+
+  _nameAllSymbols(context, finalBindings);
+
+  /// Sort bindings.
+  final finalBindingsList = visit(
+    context,
+    SorterVisitation(finalBindings, SorterVisitation.nameSortKey),
+    finalBindings,
+  ).sorted;
+
+  /// Handle any declaration-declaration name conflicts and emit warnings.
+  for (final b in finalBindingsList) {
+    _warnIfPrivateDeclaration(b, context.logger);
+  }
+
+  // Override pack values according to config. We do this after declaration
+  // conflicts have been handled so that users can target the generated names.
+  for (final b in finalBindingsList) {
+    if (b is Struct) {
+      final pack = config.structs.packingOverride(b);
+      if (pack != null) {
+        b.pack = pack.value;
+      }
+    }
+  }
+
+  return finalBindingsList;
+}
+
+/// Logs a warning if generated declaration will be private.
+void _warnIfPrivateDeclaration(Binding b, Logger logger) {
+  if (b.name.startsWith('_') && !b.isInternal) {
+    logger.warning(
+      "Generated declaration '${b.name}' starts with '_' "
+      'and therefore will be private.',
+    );
+  }
+}
+
+void _nameAllSymbols(Context context, Set<Binding> bindings) {
+  final namingOrder = visit(
+    context,
+    SorterVisitation(bindings, SorterVisitation.originalNameSortKey),
+    bindings,
+  ).sorted;
+
+  visit(
+    context,
+    CreateScopesVisitation(context, bindings, orderedPass: true),
+    namingOrder,
+  );
+  visit(
+    context,
+    CreateScopesVisitation(context, bindings, orderedPass: false),
+    namingOrder,
+  );
+  visit(context, FindSymbolsVisitation(context, bindings), namingOrder);
+
+  context.extraSymbols = _createExtraSymbols(context);
+  context.libs.createSymbols(context.rootScope);
+
+  context.rootScope.fillNames();
+  context.rootObjCScope.fillNames();
+}
+
+ExtraSymbols _createExtraSymbols(Context context) {
+  final bindingStyle = context.config.output.style;
+  Symbol? wrapperClassName;
+  Symbol? lookupFuncName;
+  if (bindingStyle is DynamicLibraryBindings) {
+    wrapperClassName = Symbol(bindingStyle.wrapperName, SymbolKind.klass);
+    lookupFuncName = Symbol('_lookup', SymbolKind.field);
+  }
+  final extraSymbols = (
+    wrapperClassName: wrapperClassName,
+    lookupFuncName: lookupFuncName,
+    symbolAddressVariableName: Symbol('addresses', SymbolKind.field),
+  );
+  context.rootScope.add(extraSymbols.wrapperClassName);
+  context.rootScope.add(extraSymbols.lookupFuncName);
+  context.rootScope.add(extraSymbols.symbolAddressVariableName);
+  return extraSymbols;
+}

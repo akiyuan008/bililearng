@@ -1,0 +1,141 @@
+// Copyright (c) 2024, the Dart project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'package:path/path.dart' as path;
+
+import 'ast/_core/interfaces/declaration.dart';
+
+const defaultTempDirPrefix = 'swift2objc_temp_';
+const symbolgraphFileSuffix = '.symbols.json';
+
+class Command {
+  final String executable;
+  final List<String> args;
+
+  Command({required this.executable, required this.args});
+}
+
+/// Used to configure Swift2ObjC wrapper generation.
+class Swift2ObjCGenerator {
+  /// The inputs to generate a wrapper for.
+  /// See `FilesInputConfig` and `ModuleInputConfig`;
+  final List<InputConfig> inputs;
+
+  /// The target to generate code for. If unspecified, defaults to host.
+  /// (e.g `x86_64-apple-ios17.0-simulator`)
+  final String? target;
+
+  /// The sdk to compile against. If unspecified, defaults to host.
+  /// (e.g `/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk`)
+  final Uri? sdk;
+
+  /// Specify where the wrapper swift file will be output.
+  final Uri outputFile;
+
+  /// Text inserted into the [outputFile] before the generated output.
+  final String? preamble;
+
+  /// Specify where to output the intermidiate files (i.g the symbolgraph json).
+  /// If this is null, a temp directory will be generated in the system temp
+  /// directory (using `Directory.systemTemp`) and then deleted.
+  /// Specifying a temp directory would prevent the tool from deleting the
+  /// intermediate files after generating the wrapper.
+  final Uri? tempDir;
+
+  /// Filter function to filter APIs
+  ///
+  /// APIs can be filtered by name
+  ///
+  /// Includes all declarations by default
+  final bool Function(Declaration declaration) include;
+
+  static bool _defaultInclude(Declaration _) => true;
+
+  const Swift2ObjCGenerator({
+    required this.inputs,
+    required this.outputFile,
+    this.target,
+    this.sdk,
+    this.tempDir,
+    this.preamble,
+    this.include = Swift2ObjCGenerator._defaultInclude,
+  });
+}
+
+/// Used to specify the inputs in the `config` object.
+sealed class InputConfig {}
+
+/// Used for `InputConfig`s that use a command to generate their symbolgraph.
+abstract interface class HasSymbolgraphCommand {
+  Command symbolgraphCommand(String target, String sdkPath);
+}
+
+/// Used to generate a objc wrapper for one or more swift files.
+class FilesInputConfig implements InputConfig, HasSymbolgraphCommand {
+  /// The swift file(s) to generate a wrapper for.
+  final List<Uri> files;
+
+  /// The name of the temporary module generated while analyzing the input
+  /// files. The name doesn't matter, and won't appear in generated code. But if
+  /// your project involves multiple Swift modules, their names must be unique.
+  final String tempModuleName;
+
+  const FilesInputConfig({
+    required this.files,
+    this.tempModuleName = 'symbolgraph_module',
+  });
+
+  @override
+  Command symbolgraphCommand(String target, String sdkPath) => Command(
+    executable: 'swiftc',
+    args: [
+      ...files.map((uri) => path.absolute(uri.path)),
+      '-emit-module',
+      '-emit-symbol-graph',
+      '-emit-symbol-graph-dir',
+      '.',
+      '-module-name',
+      tempModuleName,
+      '-target',
+      target,
+      '-sdk',
+      sdkPath,
+    ],
+  );
+}
+
+/// Used to generate a objc wrapper for a built-in swift module.
+/// (e.g, AVFoundation)
+class ModuleInputConfig implements InputConfig, HasSymbolgraphCommand {
+  /// The swift module to generate a wrapper for.
+  final String module;
+
+  const ModuleInputConfig({required this.module});
+
+  @override
+  Command symbolgraphCommand(String target, String sdkPath) => Command(
+    executable: 'swift',
+    args: [
+      'symbolgraph-extract',
+      '-module-name',
+      module,
+      '-target',
+      target,
+      '-sdk',
+      sdkPath,
+      '-output-dir',
+      '.',
+    ],
+  );
+}
+
+/// Used to generate wrappers directly from a JSON symbolgraph, for debugging.
+class JsonFileInputConfig implements InputConfig {
+  /// The JSON symbolgraph file.
+  final Uri jsonFile;
+
+  const JsonFileInputConfig({required this.jsonFile});
+}
+
+const builtInInputConfig = ModuleInputConfig(module: 'Foundation');

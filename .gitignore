@@ -1,0 +1,17 @@
+.gradle/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+pubspec.lock
+*.iml
+*.ipr
+*.iws
+.idea/
+.DS_Store
+android/.gradle/
+android/build/
+android/app/build/
+ios/Pods/
