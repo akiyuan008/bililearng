@@ -228,6 +228,7 @@ class MainController extends GetxController
       NavigationBarType.recommend,
       NavigationBarType.learning,
       NavigationBarType.subscription,
+      NavigationBarType.stats,
       NavigationBarType.setting,
     ];
     final defPage = Pref.defaultHomePage;

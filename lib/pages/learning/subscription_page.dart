@@ -44,6 +44,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             icon: const Icon(Icons.search),
             onPressed: () => Get.toNamed('/search'),
           ),
+          IconButton(
+            tooltip: '白名单管理',
+            icon: const Icon(Icons.manage_accounts_outlined),
+            onPressed: _showWhiteListSheet,
+          ),
         ],
       ),
       body: Obx(() {
@@ -83,6 +88,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           const SizedBox(height: 12),
           Text(
             _ctr.errMsg.value.isEmpty ? '暂无订阅内容' : _ctr.errMsg.value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 16),
@@ -180,23 +187,19 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     itemBuilder: (context, index) {
                       final up = _ctr.whiteList[index];
                       return ListTile(
-                        leading: up.face.isNotEmpty
-                            ? CircleAvatar(
-                                backgroundImage: NetworkImage(
+                        leading: CircleAvatar(
+                          backgroundImage: up.face.isNotEmpty
+                              ? NetworkImage(
                                   up.face.http2https,
                                   headers: const {
                                     'referer': 'https://www.bilibili.com'
                                   },
-                                ),
-                                child: up.face.isEmpty
-                                    ? const Icon(Icons.person)
-                                    : null,
-                              )
-                            : const CircleAvatar(
-                                child: Icon(Icons.person),
-                              ),
-                        title: Text(up.name),
-                        subtitle: Text('UID: ${up.mid}'),
+                                )
+                              : null,
+                          child: const Icon(Icons.person),
+                        ),
+                        title: Text(up.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        subtitle: Text('UID: ${up.mid}', maxLines: 1, overflow: TextOverflow.ellipsis),
                         trailing: IconButton(
                           tooltip: '移除',
                           icon: const Icon(Icons.delete_outline),
@@ -297,7 +300,7 @@ class _VideoCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
               child: Row(
                 children: [
                   Icon(

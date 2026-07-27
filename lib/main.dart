@@ -24,6 +24,7 @@ import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/pages/learning/stats_repo.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -98,6 +99,12 @@ void main() async {
     await Utils.copyText(e.toString());
     if (kDebugMode) debugPrint('GStorage init error: $e');
     exit(0);
+  }
+  // [PiliPlus Learning] 初始化学习统计仓库
+  try {
+    await StatsRepo.ensureInit();
+  } catch (e) {
+    if (kDebugMode) debugPrint('StatsRepo init error: $e');
   }
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([

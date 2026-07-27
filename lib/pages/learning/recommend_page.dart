@@ -78,6 +78,8 @@ class _RecommendPageState extends State<RecommendPage> {
           const SizedBox(height: 12),
           Text(
             _ctr.errMsg.value.isEmpty ? '暂无推荐内容' : _ctr.errMsg.value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 16),
@@ -188,7 +190,7 @@ class _VideoCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -229,6 +231,8 @@ class _VideoCard extends StatelessWidget {
                       ),
                       child: Text(
                         tname,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 10,
                           color: Theme.of(context).colorScheme.onPrimaryContainer,

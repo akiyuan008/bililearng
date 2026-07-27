@@ -4,6 +4,7 @@ import 'package:PiliPlus/pages/dynamics/view.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/learning/library_page.dart';
 import 'package:PiliPlus/pages/learning/recommend_page.dart';
+import 'package:PiliPlus/pages/learning/stats_page.dart';
 import 'package:PiliPlus/pages/learning/subscription_page.dart';
 import 'package:PiliPlus/pages/mine/view.dart';
 import 'package:PiliPlus/pages/setting/view.dart';
@@ -59,6 +60,13 @@ enum NavigationBarType implements EnumWithLabel {
     Icon(Icons.school_outlined),
     Icon(Icons.school),
     RecommendPage(),
+  ),
+  // [PiliPlus Learning] 新增:学习统计 Tab —— 学习时长统计图表
+  stats(
+    '学习统计',
+    Icon(Icons.bar_chart_outlined),
+    Icon(Icons.bar_chart),
+    StatsPage(),
   ),
   ;
 

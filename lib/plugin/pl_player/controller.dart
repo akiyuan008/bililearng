@@ -39,6 +39,7 @@ import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:PiliPlus/pages/learning/stats_repo.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -75,6 +76,11 @@ class PlPlayerController with BlockConfigMixin {
   static PlPlayerController? _instance;
 
   final playerStatus = PlPlayerStatus(.playing);
+
+  // [PiliPlus Learning] 学习时长追踪
+  Timer? _statsTimer;
+  int _accumulatedSeconds = 0;
+  DateTime? _playStartTime;
 
   final Rx<DataStatus> dataStatus = Rx(.none);
 
@@ -1149,6 +1155,8 @@ class PlPlayerController with BlockConfigMixin {
     audioSessionHandler?.setActive(true);
 
     playerStatus.value = PlayerStatus.playing;
+    // [PiliPlus Learning] 开始学习时长追踪
+    _startStatsTracking();
     // screenManager.setOverlays(false);
   }
 
@@ -1156,6 +1164,8 @@ class PlPlayerController with BlockConfigMixin {
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
     await _videoPlayerController?.pause();
     playerStatus.value = PlayerStatus.paused;
+    // [PiliPlus Learning] 停止并保存学习时长
+    _stopStatsTracking();
 
     // 主动暂停时让出音频焦点
     if (!isInterrupt) {
@@ -1539,6 +1549,34 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
+  // [PiliPlus Learning] 学习时长追踪方法
+  void _startStatsTracking() {
+    _playStartTime = DateTime.now();
+    _statsTimer?.cancel();
+    _statsTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      _flushStats();
+    });
+  }
+
+  void _stopStatsTracking() {
+    _statsTimer?.cancel();
+    _statsTimer = null;
+    _flushStats();
+  }
+
+  void _flushStats() {
+    if (_playStartTime == null) return;
+    final now = DateTime.now();
+    final elapsed = now.difference(_playStartTime!).inSeconds;
+    if (elapsed > 0) {
+      _accumulatedSeconds += elapsed;
+      try {
+        StatsRepo.addSeconds(DateTime.now(), elapsed);
+      } catch (_) {}
+    }
+    _playStartTime = DateTime.now();
+  }
+
   void onCloseAll() {
     _isCloseAll = true;
     dispose();
@@ -1546,6 +1584,8 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void dispose() {
+    // [PiliPlus Learning] 停止学习时长追踪
+    _stopStatsTracking();
     // 每次减1，最后销毁
     resetScreenRotation();
     cancelLongPressTimer();
