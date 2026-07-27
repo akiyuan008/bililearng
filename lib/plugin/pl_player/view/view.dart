@@ -1067,7 +1067,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             builder: (context) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                borderRadius: const BorderRadius.all(Radius.circular(6)),
                 color: colorScheme.secondaryContainer,
               ),
               child: Text(
@@ -1410,7 +1410,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
                         color: Color(0x88000000),
-                        borderRadius: BorderRadius.all(BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
                       ),
                       child: Obx(
                         () => Text(
@@ -1446,7 +1446,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     child: Container(
                       decoration: const BoxDecoration(
                         color: Color(0x88000000),
-                        borderRadius: BorderRadius.all(BorderRadius.circular(64)),
+                        borderRadius: BorderRadius.all(Radius.circular(64)),
                       ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -1502,7 +1502,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     ),
                     decoration: const BoxDecoration(
                       color: Color(0x88000000),
-                      borderRadius: BorderRadius.all(BorderRadius.circular(64)),
+                      borderRadius: BorderRadius.all(Radius.circular(64)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -1551,7 +1551,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   ),
                   decoration: const BoxDecoration(
                     color: Color(0x88000000),
-                    borderRadius: BorderRadius.all(BorderRadius.circular(64)),
+                    borderRadius: BorderRadius.all(Radius.circular(64)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1806,7 +1806,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       child: DecoratedBox(
                         decoration: const BoxDecoration(
                           color: Color(0x45000000),
-                          borderRadius: BorderRadius.all(BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
                         child: Obx(() {
                           final controlsLock =
@@ -1850,7 +1850,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       child: DecoratedBox(
                         decoration: const BoxDecoration(
                           color: Color(0x45000000),
-                          borderRadius: BorderRadius.all(BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
                         child: ComBtn(
                           tooltip: '截图',

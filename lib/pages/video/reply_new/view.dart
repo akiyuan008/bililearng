@@ -255,7 +255,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
               child: Container(
                 decoration: BoxDecoration(
                   color: themeData.colorScheme.onInverseSurface,
-                  borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                  borderRadius: const BorderRadius.all(Radius.circular(6)),
                 ),
                 alignment: Alignment.center,
                 child: icon,

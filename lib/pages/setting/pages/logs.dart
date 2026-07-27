@@ -360,7 +360,7 @@ class _ReportCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: colorScheme.surface,
-            borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
             border: .all(color: colorScheme.outline.withValues(alpha: 0.5)),
           ),
           child: SelectionText(
@@ -387,7 +387,7 @@ class _ReportCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
               border: .all(color: colorScheme.outline.withValues(alpha: 0.5)),
             ),
             child: SelectionText.rich(

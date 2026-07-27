@@ -205,7 +205,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 padding: EdgeInsets.zero,
                 shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+                  borderRadius: BorderRadius.all(Radius.circular(6)),
                 ),
               ),
               onPressed: _enablePost.value ? _onPost : null,

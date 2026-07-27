@@ -164,9 +164,9 @@ class _PagesPanelState extends State<PagesPanel> {
                     : null,
                 child: Material(
                   color: theme.colorScheme.onInverseSurface,
-                  borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                  borderRadius: const BorderRadius.all(Radius.circular(6)),
                   child: InkWell(
-                    borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                    borderRadius: const BorderRadius.all(Radius.circular(6)),
                     onTap: () {
                       if (widget.onDownload case final onDownload?) {
                         if (onDownload(item) && mounted) {

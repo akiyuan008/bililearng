@@ -266,7 +266,7 @@ class UserInfoCard extends StatelessWidget {
       margin: const EdgeInsets.only(left: 20, top: 8, right: 20),
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         color: colorScheme.onInverseSurface,
       ),
       child: Text.rich(
@@ -362,7 +362,7 @@ class UserInfoCard extends StatelessWidget {
     return Container(
       width: .infinity,
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
         color: isLight ? colorScheme.errorContainer : colorScheme.error,
       ),
       margin: const EdgeInsets.only(left: 20, top: 8, right: 20),

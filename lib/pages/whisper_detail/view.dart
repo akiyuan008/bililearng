@@ -319,7 +319,7 @@ class _WhisperDetailPageState
                     fillColor: theme.colorScheme.surface,
                     border: const OutlineInputBorder(
                       borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+                      borderRadius: BorderRadius.all(Radius.circular(6)),
                       gapPadding: 0,
                     ),
                     contentPadding: const EdgeInsets.all(10),

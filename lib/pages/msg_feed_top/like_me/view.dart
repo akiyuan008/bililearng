@@ -321,7 +321,7 @@ class _LikeMePageState extends State<LikeMePage> {
               width: 45,
               height: 45,
               src: item.item!.image,
-              borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
             ),
           if (item.noticeState == 1) ...[
             if (item.item?.image?.isNotEmpty == true) const SizedBox(width: 4),

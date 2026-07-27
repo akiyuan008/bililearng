@@ -12,7 +12,7 @@ class SpaceOpusSkeleton extends StatelessWidget {
       child: Card(
         clipBehavior: Clip.hardEdge,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+          borderRadius: BorderRadius.all(Radius.circular(6)),
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {

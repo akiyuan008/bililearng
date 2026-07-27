@@ -203,7 +203,7 @@ class OpusContent extends StatelessWidget {
                         width: 4,
                       ),
                     ),
-                    borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                    borderRadius: const BorderRadius.all(Radius.circular(6)),
                     color: colorScheme.onInverseSurface,
                   ),
                   child: widget,
@@ -330,7 +330,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: ugc.cover,
-                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: const BorderRadius.all(Radius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -365,7 +365,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: common.cover,
-                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: const BorderRadius.all(Radius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -404,7 +404,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: live.cover,
-                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: const BorderRadius.all(Radius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -443,7 +443,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: opus.cover,
-                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: const BorderRadius.all(Radius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -469,7 +469,7 @@ class OpusContent extends StatelessWidget {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                          borderRadius: const BorderRadius.all(Radius.circular(6)),
                           color: colorScheme.secondaryContainer,
                         ),
                         width: 70,
@@ -506,7 +506,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: music.cover,
-                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: const BorderRadius.all(Radius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -545,7 +545,7 @@ class OpusContent extends StatelessWidget {
                               width: 104,
                               height: 65,
                               src: e.cover,
-                              borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                              borderRadius: const BorderRadius.all(Radius.circular(6)),
                             ),
                             Expanded(
                               child: Column(
@@ -643,7 +643,7 @@ class OpusContent extends StatelessWidget {
                             }
                           } catch (_) {}
                         },
-                  borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
                   child: Padding(
                     padding: const EdgeInsets.all(8),
                     child: child,
@@ -670,7 +670,7 @@ class OpusContent extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
                   color: colorScheme.onInverseSurface,
                 ),
                 width: .infinity,
@@ -897,10 +897,10 @@ Widget opusCollection(ThemeData theme, ModuleCollection item) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 10),
     child: Material(
-      borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
       color: theme.colorScheme.onInverseSurface,
       child: InkWell(
-        borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         onTap: () => Get.toNamed(
           '/articleList',
           parameters: {'id': '${item.id}'},

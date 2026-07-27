@@ -155,7 +155,7 @@ class ShutdownTimerService {
           child: Material(
             clipBehavior: .hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 14),
               children: [

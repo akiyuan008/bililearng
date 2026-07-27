@@ -170,7 +170,7 @@ abstract class BaseVideoWebState<
     final pageIndicator = SearchText(
       height: 1,
       text: '$page / $totalPage',
-      borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+      borderRadius: const BorderRadius.all(Radius.circular(4)),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       onTap: (_) => showJumpDialog(page),
     );

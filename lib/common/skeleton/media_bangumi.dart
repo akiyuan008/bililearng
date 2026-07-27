@@ -25,7 +25,7 @@ class _MediaPgcSkeletonState extends State<MediaPgcSkeleton> {
               width: 111,
               height: 148,
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                borderRadius: const BorderRadius.all(Radius.circular(6)),
                 color: bgColor,
               ),
             ),

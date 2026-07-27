@@ -19,7 +19,7 @@ Widget buildVoteCard(
           Container(
             decoration: BoxDecoration(
               color: colorScheme.onInverseSurface,
-              borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
             ),
             width: 60,
             height: 42,

@@ -86,7 +86,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: bg,
-                          borderRadius: const BorderRadius.all(BorderRadius.circular(14)),
+                          borderRadius: const BorderRadius.all(Radius.circular(14)),
                         ),
                         child: Text.rich(
                           TextSpan(
@@ -185,7 +185,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                         ),
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+                      borderRadius: const BorderRadius.all(Radius.circular(8)),
                       color: const Color(0x2FFFFFFF),
                       border: Border.all(color: Colors.white24, width: 0.7),
                     ),

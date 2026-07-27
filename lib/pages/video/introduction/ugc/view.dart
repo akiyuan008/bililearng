@@ -308,7 +308,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
         ),
         child: Text(
           text,
@@ -345,7 +345,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
                   color: colorScheme.secondaryContainer,
-                  borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+                  borderRadius: const BorderRadius.all(Radius.circular(4)),
                 ),
                 child: Row(
                   mainAxisSize: .min,

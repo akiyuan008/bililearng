@@ -340,7 +340,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                           height: 3,
                           decoration: BoxDecoration(
                             color: theme.colorScheme.outline,
-                            borderRadius: const BorderRadius.all(BorderRadius.circular(1.5)),
+                            borderRadius: const BorderRadius.all(Radius.circular(1.5)),
                           ),
                         ),
                       ),

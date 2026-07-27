@@ -24,7 +24,7 @@ class FavPgcItemSkeleton extends StatelessWidget {
                   return Container(
                     decoration: BoxDecoration(
                       color: color,
-                      borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
                     ),
                     width: boxConstraints.maxWidth,
                     height: boxConstraints.maxHeight,

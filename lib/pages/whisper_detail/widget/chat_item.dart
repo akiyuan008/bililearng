@@ -305,7 +305,7 @@ class ChatItem extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
           color: theme.colorScheme.onInverseSurface,
-          borderRadius: const BorderRadius.all(BorderRadius.circular(16)),
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
         ),
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -487,7 +487,7 @@ class ChatItem extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 3.5),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
-                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: const BorderRadius.all(Radius.circular(6)),
                       ),
                       child: msgTypeText_1(
                         theme,
@@ -748,7 +748,7 @@ class ChatItem extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
           color: theme.colorScheme.onInverseSurface,
-          borderRadius: const BorderRadius.all(BorderRadius.circular(16)),
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
         ),
         padding: const EdgeInsets.all(12),
         child: Column(

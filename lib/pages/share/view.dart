@@ -234,7 +234,7 @@ class _SharePanelState extends State<SharePanel> {
                     hintStyle: const TextStyle(fontSize: 14),
                     border: const OutlineInputBorder(
                       borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.all(BorderRadius.circular(20)),
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
                     ),
                     filled: true,
                     isDense: true,

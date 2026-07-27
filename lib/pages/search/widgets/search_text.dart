@@ -24,7 +24,7 @@ class SearchText extends StatelessWidget {
     this.textAlign,
     this.height,
     this.padding = const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-    this.borderRadius = const BorderRadius.all(BorderRadius.circular(6)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(6)),
   });
 
   @override

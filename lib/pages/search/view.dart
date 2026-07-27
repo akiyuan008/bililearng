@@ -141,7 +141,7 @@ class _SearchPageState extends State<SearchPage> {
               children: list
                   .map(
                     (item) => InkWell(
-                      borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
                       onTap: () => _searchController.onClickKeyword(item.term!),
                       child: Padding(
                         padding: const EdgeInsets.only(left: 20, top: 9, bottom: 9),

@@ -136,7 +136,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
           },
           onSecondaryTap: PlatformUtils.isMobile ? null : onClear,
           child: ClipRRect(
-            borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
             child: ConstrainedBox(
               constraints: const BoxConstraints(minWidth: 42),
               child: switch (image) {

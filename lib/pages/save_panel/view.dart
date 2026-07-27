@@ -358,7 +358,7 @@ class _SavePanelState extends State<SavePanel> {
                 clipBehavior: .hardEdge,
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
-                  borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
                 ),
                 child: AnimatedSize(
                   curve: Curves.easeInOut,
@@ -395,7 +395,7 @@ class _SavePanelState extends State<SavePanel> {
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.onInverseSurface,
-                            borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+                            borderRadius: const BorderRadius.all(Radius.circular(8)),
                           ),
                           child: Row(
                             spacing: 10,
@@ -407,7 +407,7 @@ class _SavePanelState extends State<SavePanel> {
                                     ? coverSize * Style.aspectRatio16x9
                                     : coverSize,
                                 quality: 100,
-                                borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                                borderRadius: const BorderRadius.all(Radius.circular(6)),
                               ),
                               Expanded(
                                 child: Column(

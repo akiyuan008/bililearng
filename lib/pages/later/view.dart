@@ -220,7 +220,7 @@ class _LaterPageState extends State<LaterPage>
                 onSelected: (value) => currCtr()
                   ..asc.value = value
                   ..onReload(),
-                borderRadius: const BorderRadius.all(BorderRadius.circular(20)),
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: Text.rich(
@@ -261,7 +261,7 @@ class _LaterPageState extends State<LaterPage>
           ),
           PopupMenuButton(
             tooltip: '清空',
-            borderRadius: const BorderRadius.all(BorderRadius.circular(20)),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Text.rich(

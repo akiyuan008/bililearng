@@ -89,7 +89,7 @@ class _FavTopicPageState extends State<FavTopicPage>
 
                   return Material(
                     color: theme.colorScheme.onInverseSurface,
-                    borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+                    borderRadius: const BorderRadius.all(Radius.circular(6)),
                     child: InkWell(
                       onTap: () => Get.toNamed(
                         '/dynTopic',

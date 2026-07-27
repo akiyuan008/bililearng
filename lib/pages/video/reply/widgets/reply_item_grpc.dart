@@ -571,7 +571,7 @@ class ReplyItemGrpc extends StatelessWidget {
       padding: const EdgeInsets.only(left: 42, right: 4),
       child: Material(
         color: colorScheme.onInverseSurface,
-        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
         clipBehavior: Clip.hardEdge,
         animationDuration: Duration.zero,
         child: Column(
@@ -1010,7 +1010,7 @@ class ReplyItemGrpc extends StatelessWidget {
                   height: 3,
                   decoration: BoxDecoration(
                     color: colorScheme.outline,
-                    borderRadius: const BorderRadius.all(BorderRadius.circular(3)),
+                    borderRadius: const BorderRadius.all(Radius.circular(3)),
                   ),
                 ),
               ),

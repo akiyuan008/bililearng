@@ -123,7 +123,7 @@ class MedalWall extends StatelessWidget {
                     ? Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.all(BorderRadius.circular(3)),
+                          borderRadius: const BorderRadius.all(Radius.circular(3)),
                           color: colorScheme.btnColor,
                         ),
                         child: const Text(

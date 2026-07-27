@@ -18,7 +18,7 @@ class CustomToast extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
       decoration: BoxDecoration(
         color: colorScheme.primaryContainer.withValues(alpha: toastOpacity),
-        borderRadius: const BorderRadius.all(BorderRadius.circular(20)),
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
       ),
       child: Text(
         msg,
@@ -45,7 +45,7 @@ class LoadingWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
       decoration: BoxDecoration(
         color: theme.dialogTheme.backgroundColor,
-        borderRadius: const BorderRadius.all(BorderRadius.circular(15)),
+        borderRadius: const BorderRadius.all(Radius.circular(15)),
       ),
       child: Column(
         spacing: 20,
@@ -75,7 +75,7 @@ class NotifyWarning extends StatelessWidget {
     final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
     return Container(
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         color: theme.dialogTheme.backgroundColor,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

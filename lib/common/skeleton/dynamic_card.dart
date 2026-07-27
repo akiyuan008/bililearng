@@ -37,7 +37,7 @@ class DynamicCardSkeleton extends StatelessWidget {
                   height: 40,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: const BorderRadius.all(BorderRadius.circular(20)),
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
                   ),
                 ),
                 const SizedBox(width: 10),

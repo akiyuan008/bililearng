@@ -208,7 +208,7 @@ class _MemberPageState extends State<MemberPage> {
                       height: 3,
                       decoration: BoxDecoration(
                         color: scheme.outline,
-                        borderRadius: const BorderRadius.all(BorderRadius.circular(1.5)),
+                        borderRadius: const BorderRadius.all(Radius.circular(1.5)),
                       ),
                     ),
                   ),

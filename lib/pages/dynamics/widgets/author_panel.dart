@@ -161,7 +161,7 @@ class AuthorPanel extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+              borderRadius: const BorderRadius.all(Radius.circular(4)),
               border: .all(width: 1.25, color: theme.colorScheme.primary),
             ),
             child: Text(
@@ -286,7 +286,7 @@ class AuthorPanel extends StatelessWidget {
                       height: 3,
                       decoration: BoxDecoration(
                         color: theme.colorScheme.outline,
-                        borderRadius: const BorderRadius.all(BorderRadius.circular(1.5)),
+                        borderRadius: const BorderRadius.all(Radius.circular(1.5)),
                       ),
                     ),
                   ),

@@ -116,7 +116,7 @@ class _VolumeButtonState extends State<VolumeButton> {
               cardTheme.surfaceTintColor,
               2,
             ),
-            borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+            borderRadius: const BorderRadius.all(Radius.circular(6)),
           ),
           child: SliderTheme(
             data: const SliderThemeData(

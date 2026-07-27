@@ -287,7 +287,7 @@ Widget? addWidget(
                           ),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(
@@ -468,7 +468,7 @@ Widget? addWidget(
                   ),
                   style: FilledButton.styleFrom(
                     shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+                      borderRadius: BorderRadius.all(Radius.circular(6)),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     visualDensity: const VisualDensity(
@@ -541,7 +541,7 @@ Widget? addWidget(
                     ),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(
@@ -662,7 +662,7 @@ Widget? addWidget(
                         PiliScheme.routePushFromUrl(button.jumpUrl!),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(

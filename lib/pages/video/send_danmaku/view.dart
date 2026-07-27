@@ -240,7 +240,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
       child: Container(
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
           border: _color.value != color
               ? null
               : Border.all(
@@ -251,7 +251,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: color,
-            borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+            borderRadius: const BorderRadius.all(Radius.circular(6)),
           ),
           child: color == Colors.transparent
               ? Stack(
@@ -260,7 +260,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
                   children: [
                     Container(
                       decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
                         gradient: LinearGradient(
                           colors: [
                             Color(0xFFDD94DA),
@@ -273,7 +273,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
                       margin: const EdgeInsets.all(5),
                       decoration: const BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.all(BorderRadius.circular(4)),
+                        borderRadius: BorderRadius.all(Radius.circular(4)),
                       ),
                     ),
                   ],
@@ -295,7 +295,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
               color: _mode.value == mode
                   ? themeData.colorScheme.secondaryContainer
                   : themeData.colorScheme.onInverseSurface,
-              borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
             ),
             padding: const EdgeInsets.symmetric(vertical: 5),
             child: Text(
@@ -323,7 +323,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
               color: _fontSize.value == fontSize
                   ? themeData.colorScheme.secondaryContainer
                   : themeData.colorScheme.onInverseSurface,
-              borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
             ),
             padding: const EdgeInsets.symmetric(vertical: 5),
             child: Text(

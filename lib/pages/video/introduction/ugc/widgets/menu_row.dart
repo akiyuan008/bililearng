@@ -24,9 +24,9 @@ class ActionRowLineItem extends StatelessWidget {
     return Material(
       color: selectStatus ? theme.colorScheme.secondaryContainer : null,
       type: selectStatus ? MaterialType.canvas : MaterialType.transparency,
-      borderRadius: const BorderRadius.all(BorderRadius.circular(30)),
+      borderRadius: const BorderRadius.all(Radius.circular(30)),
       child: InkWell(
-        borderRadius: const BorderRadius.all(BorderRadius.circular(30)),
+        borderRadius: const BorderRadius.all(Radius.circular(30)),
         onTap: () => {
           feedBack(),
           onTap?.call(),
@@ -34,7 +34,7 @@ class ActionRowLineItem extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(13, 5.5, 13, 4.5),
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(BorderRadius.circular(30)),
+            borderRadius: const BorderRadius.all(Radius.circular(30)),
             border: Border.all(
               color: selectStatus
                   ? Colors.transparent

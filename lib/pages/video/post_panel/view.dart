@@ -336,7 +336,7 @@ class _PostPanelState extends State<PostPanel>
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: theme.colorScheme.onInverseSurface,
-            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
           ),
           child: Builder(
             builder: (context) => Column(

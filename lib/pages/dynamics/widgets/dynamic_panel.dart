@@ -262,7 +262,7 @@ class DynamicPanel extends StatelessWidget {
         color: theme.colorScheme.secondaryContainer.withValues(
           alpha: theme.isLight ? 0.5 : 0.7,
         ),
-        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
       ),
       child: Text.rich(
         style: TextStyle(

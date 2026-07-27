@@ -405,7 +405,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
         ? child
         : InkWell(
             onTap: onTap,
-            borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
+            borderRadius: const BorderRadius.all(Radius.circular(6)),
             child: Padding(
               padding: const EdgeInsets.all(4),
               child: Row(
@@ -505,7 +505,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                                 ),
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+                                    borderRadius: const BorderRadius.all(Radius.circular(4)),
                                     color: theme.colorScheme.secondaryContainer
                                         .withValues(alpha: 0.5),
                                   ),

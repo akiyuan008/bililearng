@@ -142,7 +142,7 @@ class _PopupMenuDefaultsM3 extends PopupMenuThemeData {
   Color? get surfaceTintColor => Colors.transparent;
 
   @override
-  ShapeBorder? get shape => const RoundedRectangleBorder(borderRadius: BorderRadius.all(BorderRadius.circular(4.0)));
+  ShapeBorder? get shape => const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4.0)));
 
   // TODO(bleroux): This is taken from https://m3.material.io/components/menus/specs
   // Update this when the token is available.

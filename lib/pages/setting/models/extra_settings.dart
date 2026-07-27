@@ -1159,7 +1159,7 @@ void _showProxyDialog(BuildContext context) {
               isDense: true,
               labelText: '请输入Host，使用 . 分割',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(BorderRadius.circular(6)),
+                borderRadius: BorderRadius.all(Radius.circular(6)),
               ),
             ),
             onChanged: (e) => systemProxyHost = e,

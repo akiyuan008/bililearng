@@ -162,7 +162,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
           child: Material(
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: ListView(

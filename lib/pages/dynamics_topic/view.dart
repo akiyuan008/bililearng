@@ -99,7 +99,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                                   minHeight: 24,
                                 ),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                borderRadius: const BorderRadius.all(BorderRadius.circular(25)),
+                                borderRadius: const BorderRadius.all(Radius.circular(25)),
                                 onPressed: (index) {
                                   _controller.onSort(allSortBy[index].sortBy!);
                                   (context as Element).markNeedsBuild();

@@ -139,7 +139,7 @@ class _HomePageState extends CommonPageState<HomePage>
   }
 
   Widget searchBar(ThemeData theme) {
-    const borderRadius = BorderRadius.all(BorderRadius.circular(25));
+    const borderRadius = BorderRadius.all(Radius.circular(25));
     return Expanded(
       child: SizedBox(
         height: 44,

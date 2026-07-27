@@ -36,7 +36,7 @@ class FavFolderItem extends StatelessWidget {
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
               boxShadow: [
                 BoxShadow(
                   color: theme.colorScheme.onInverseSurface.withValues(
