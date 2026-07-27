@@ -99,11 +99,15 @@ class RenderAnimatedMultiHeight extends RenderProxyBox {
     required TickerProvider vsync,
     required Duration duration,
     Duration? reverseDuration,
-    this._curve = Curves.linear,
-    this._clipBehavior = .hardEdge,
-    this._onEnd,
-    required this._expand,
-  }) : _vsync = vsync {
+    Curve curve = Curves.linear,
+    Clip clipBehavior = Clip.hardEdge,
+    VoidCallback? onEnd,
+    required bool expand,
+  })  : _vsync = vsync,
+        _curve = curve,
+        _clipBehavior = clipBehavior,
+        _onEnd = onEnd,
+        _expand = expand {
     _controller =
         AnimationController(
           vsync: vsync,

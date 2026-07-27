@@ -3,6 +3,7 @@
 // 使用原项目依赖 waterfall_flow 实现瀑布流,cached_network_image_ce 加载封面,
 // PageUtils.toVideoPage 复用原项目视频详情页跳转。
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
@@ -38,7 +39,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           ),
           IconButton(
             tooltip: '白名单管理',
-            icon: const Icon(Icons.playlist_remove_check_outlined),
+            icon: const Icon(Icons.manage_accounts_outlined),
             onPressed: _showWhiteListSheet,
           ),
         ],
@@ -95,8 +96,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   void _showAddUpDialog() {
     final controller = TextEditingController();
-    Get.dialog<void>(
-      AlertDialog(
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
         title: const Text('添加 UP 主'),
         content: TextField(
           controller: controller,
@@ -110,14 +112,14 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back<void>(),
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('取消'),
           ),
           FilledButton(
             onPressed: () async {
               final uid = controller.text.trim();
               if (uid.isNotEmpty) {
-                Get.back<void>();
+                Navigator.pop(ctx);
                 await _ctr.addUp(uid);
                 await _ctr.refreshFeed();
               }
@@ -130,14 +132,13 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   }
 
   void _showWhiteListSheet() {
-    final ctx = Get.context;
-    if (ctx == null) return;
-    Get.bottomSheet<void>(
-      SafeArea(
+    showModalBottomSheet<void>(
+      context: context,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.6,
+      ),
+      builder: (ctx) => SafeArea(
         child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(ctx).size.height * 0.6,
-          ),
           decoration: BoxDecoration(
             color: Theme.of(ctx).colorScheme.surface,
             borderRadius: const BorderRadius.vertical(
