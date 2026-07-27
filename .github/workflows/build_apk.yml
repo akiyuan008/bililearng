@@ -22,10 +22,21 @@ jobs:
         run: flutter pub cache clean -f
       - name: Install dependencies
         run: flutter pub get
+      - name: Run build_runner
+        run: dart run build_runner build --delete-conflicting-outputs
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --verbose
       - name: Upload APK
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-error-logs
+          path: |
+            build/
+            **/*.log
