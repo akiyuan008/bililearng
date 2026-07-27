@@ -100,7 +100,7 @@ dependencies:
   url_launcher: 6.3.2
   uuid: 4.6.0
   vector_math: 2.2.0
-  wakelock_plus: 1.6.1
+  wakelock_plus: 1.7.0
   waterfall_flow: 3.1.1
   web_socket_channel: 3.0.3
   webdav_client:
@@ -109,7 +109,6 @@ dependencies:
   window_manager:
     path: vendor/window_manager/packages/window_manager
 dependency_overrides:
-  meta: 1.18.0
   flutter_inappwebview_android:
     path: vendor/flutter_inappwebview/flutter_inappwebview_android
   flutter_inappwebview_windows:
