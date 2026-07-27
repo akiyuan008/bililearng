@@ -1,10 +1,12 @@
 // [PiliPlus Learning] 学习推荐控制器
-// 调用 B站排行榜 API 获取知识区(rid=1010)和科技区(rid=1012)的热门视频,
-// 聚合后按播放量倒序排列,确保只展示学习类内容。
+// 调用 B站排行榜 API 获取知识区(rid=36)和科技区(rid=188)的热门视频,
+// 经学习过滤算法过滤后,按播放量倒序排列,确保只展示学习类内容。
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:get/get.dart';
+
+import 'learning_filter.dart';
 
 class RecommendController extends GetxController {
   /// 推荐视频列表
@@ -16,9 +18,9 @@ class RecommendController extends GetxController {
   /// 错误信息
   final RxString errMsg = ''.obs;
 
-  /// 学习类分区 rid
-  static const int _knowledgeRid = 1010; // 知识区
-  static const int _techRid = 1012; // 科技区
+  /// 学习类分区 rid (使用初代 tid,排行榜 API 识别此格式)
+  static const int _knowledgeRid = 36; // 知识区
+  static const int _techRid = 188; // 科技区
 
   @override
   void onInit() {
@@ -44,10 +46,13 @@ class RecommendController extends GetxController {
         }
       }
 
+      // 学习视频过滤:基于分区名和标题关键词过滤非学习内容
+      final filtered = LearningFilter.filterList(all);
+
       // 去重(同一视频可能同时出现在两个分区榜)
       final seen = <String>{};
       final deduped = <HotVideoItemModel>[];
-      for (final v in all) {
+      for (final v in filtered) {
         final key = v.bvid ?? v.aid.toString();
         if (key != null && seen.add(key)) {
           deduped.add(v);
