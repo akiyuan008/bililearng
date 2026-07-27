@@ -1,6 +1,91 @@
 // [PiliPlus Learning] 学习统计仓库
-// 使用 Hive 按日期记录学习时长(秒),独立 Box 不污染原 GStorage。
+// 使用 Hive 按日期记录学习时长(秒)和视频观看明细,独立 Box 不污染原 GStorage。
+// 存储 Key 设计:
+//   "d:yyyy-MM-dd"       -> int    (每日总学习秒数)
+//   "v:yyyy-MM-dd"       -> List   (每日视频观看记录, JSON 编码)
+import 'dart:convert';
 import 'package:hive_ce/hive.dart';
+
+/// 单条视频观看记录
+class VideoWatchRecord {
+  final String title;
+  final String upName;
+  final String? cover;
+  final String? bvid;
+  final int seconds;
+  final DateTime watchedAt;
+
+  VideoWatchRecord({
+    required this.title,
+    required this.upName,
+    this.cover,
+    this.bvid,
+    required this.seconds,
+    required this.watchedAt,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'upName': upName,
+        'cover': cover,
+        'bvid': bvid,
+        'seconds': seconds,
+        'ts': watchedAt.millisecondsSinceEpoch,
+      };
+
+  factory VideoWatchRecord.fromJson(Map<String, dynamic> json) {
+    return VideoWatchRecord(
+      title: json['title'] as String? ?? '',
+      upName: json['upName'] as String? ?? '',
+      cover: json['cover'] as String?,
+      bvid: json['bvid'] as String?,
+      seconds: json['seconds'] as int? ?? 0,
+      watchedAt: DateTime.fromMillisecondsSinceEpoch(
+        json['ts'] as int? ?? 0,
+      ),
+    );
+  }
+}
+
+/// 按日期分组的视频记录
+class DateGroupedRecords {
+  final DateTime date;
+  final int totalSeconds;
+  final List<VideoWatchRecord> records;
+
+  DateGroupedRecords({
+    required this.date,
+    required this.totalSeconds,
+    required this.records,
+  });
+}
+
+/// 日报/周报/月报汇总数据
+class PeriodSummary {
+  final int totalSeconds;
+  final int studyDays;
+  final int videoCount;
+  final List<VideoWatchRecord> records;
+  final List<({DateTime date, int seconds})> dailyData;
+  final int averageDailySeconds;
+  final int studyStreak;
+  final int maxDaySeconds;
+  final DateTime? maxDayDate;
+  final List<DateGroupedRecords> recordsByDate;
+
+  PeriodSummary({
+    required this.totalSeconds,
+    required this.studyDays,
+    required this.videoCount,
+    required this.records,
+    required this.dailyData,
+    required this.averageDailySeconds,
+    required this.studyStreak,
+    required this.maxDaySeconds,
+    this.maxDayDate,
+    required this.recordsByDate,
+  });
+}
 
 class StatsRepo {
   StatsRepo._();
@@ -38,20 +123,21 @@ class StatsRepo {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
+  // ======================== 学习时长 ========================
+
   /// 获取指定日期的学习时长(秒)
   static int getSeconds(DateTime date) {
-    return _safeBox.get(_dateKey(date), defaultValue: 0) as int;
+    return _safeBox.get('d:${_dateKey(date)}', defaultValue: 0) as int;
   }
 
   /// 增加指定日期的学习时长
   static Future<void> addSeconds(DateTime date, int seconds) async {
-    final key = _dateKey(date);
+    final key = 'd:${_dateKey(date)}';
     final current = _safeBox.get(key, defaultValue: 0) as int;
     await _safeBox.put(key, current + seconds);
   }
 
-  /// 获取最近 N 天的学习时长列表
-  /// 返回 [{date: DateTime, seconds: int}] 列表，按日期正序
+  /// 获取最近 N 天的学习时长列表(只含今天及之前,不含未来日期)
   static List<({DateTime date, int seconds})> getRecentDays(int days) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -63,11 +149,13 @@ class StatsRepo {
     return result;
   }
 
-  /// 获取总学习时长(秒) - 所有记录
+  /// 获取总学习时长(秒)
   static int getTotalSeconds() {
     int total = 0;
     for (final key in _safeBox.keys) {
-      total += _safeBox.get(key, defaultValue: 0) as int;
+      if (key is String && key.startsWith('d:')) {
+        total += _safeBox.get(key, defaultValue: 0) as int;
+      }
     }
     return total;
   }
@@ -76,13 +164,237 @@ class StatsRepo {
   static int getStudyDays() {
     int count = 0;
     for (final key in _safeBox.keys) {
-      if ((_safeBox.get(key, defaultValue: 0) as int) > 0) count++;
+      if (key is String && key.startsWith('d:')) {
+        if ((_safeBox.get(key, defaultValue: 0) as int) > 0) count++;
+      }
     }
     return count;
   }
 
   /// 获取今日学习时长(秒)
   static int getTodaySeconds() => getSeconds(DateTime.now());
+
+  /// 获取连续学习天数(从今天往前数,连续有学习记录的天数)
+  /// 如果今天还没学习但昨天有,则从昨天开始算
+  static int getStudyStreak() {
+    final now = DateTime.now();
+    var date = DateTime(now.year, now.month, now.day);
+    // 如果今天还没学习,从昨天开始算
+    if (getSeconds(date) == 0) {
+      date = date.subtract(const Duration(days: 1));
+    }
+    int streak = 0;
+    while (getSeconds(date) > 0) {
+      streak++;
+      date = date.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+
+  /// 获取总观看视频数
+  static int getTotalVideoCount() {
+    int count = 0;
+    for (final key in _safeBox.keys) {
+      if (key is String && key.startsWith('v:')) {
+        final raw = _safeBox.get(key);
+        if (raw is String && raw.isNotEmpty) {
+          try {
+            final list = jsonDecode(raw) as List<dynamic>;
+            count += list.length;
+          } catch (_) {}
+        }
+      }
+    }
+    return count;
+  }
+
+  // ======================== 视频观看记录 ========================
+
+  /// 记录一次视频观看
+  static Future<void> addVideoRecord(VideoWatchRecord record) async {
+    final key = 'v:${_dateKey(record.watchedAt)}';
+    final raw = _safeBox.get(key);
+    List<dynamic> list = [];
+    if (raw is String && raw.isNotEmpty) {
+      try {
+        list = jsonDecode(raw) as List<dynamic>;
+      } catch (_) {}
+    }
+    list.add(record.toJson());
+    // 每天最多保留 200 条记录,防止数据膨胀
+    if (list.length > 200) {
+      list = list.sublist(list.length - 200);
+    }
+    await _safeBox.put(key, jsonEncode(list));
+  }
+
+  /// 获取指定日期的视频观看记录
+  static List<VideoWatchRecord> getVideoRecords(DateTime date) {
+    final key = 'v:${_dateKey(date)}';
+    final raw = _safeBox.get(key);
+    if (raw is String && raw.isNotEmpty) {
+      try {
+        final list = jsonDecode(raw) as List<dynamic>;
+        return list
+            .map((e) => VideoWatchRecord.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } catch (_) {}
+    }
+    return [];
+  }
+
+  /// 获取指定日期范围内的视频观看记录(不含未来日期)
+  static List<VideoWatchRecord> getVideoRecordsRange(
+    DateTime start,
+    DateTime end,
+  ) {
+    final result = <VideoWatchRecord>[];
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    var date = DateTime(start.year, start.month, start.day);
+    final endDate = DateTime(end.year, end.month, end.day);
+    while (!date.isAfter(endDate)) {
+      // 跳过未来日期
+      if (!date.isAfter(todayDate)) {
+        result.addAll(getVideoRecords(date));
+      }
+      date = date.add(const Duration(days: 1));
+    }
+    // 按观看时间倒序排列(最新的在前)
+    result.sort((a, b) => b.watchedAt.compareTo(a.watchedAt));
+    return result;
+  }
+
+  /// 获取按日期分组的视频记录(不含未来日期,按日期倒序)
+  static List<DateGroupedRecords> getRecordsGroupedByDate(
+    DateTime start,
+    DateTime end,
+  ) {
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final result = <DateGroupedRecords>[];
+    var date = DateTime(start.year, start.month, start.day);
+    final endDate = DateTime(end.year, end.month, end.day);
+    while (!date.isAfter(endDate)) {
+      if (!date.isAfter(todayDate)) {
+        final records = getVideoRecords(date);
+        if (records.isNotEmpty) {
+          final totalSeconds = getSeconds(date);
+          records.sort((a, b) => b.watchedAt.compareTo(a.watchedAt));
+          result.add(DateGroupedRecords(
+            date: date,
+            totalSeconds: totalSeconds,
+            records: records,
+          ));
+        }
+      }
+      date = date.add(const Duration(days: 1));
+    }
+    // 按日期倒序排列
+    result.sort((a, b) => b.date.compareTo(a.date));
+    return result;
+  }
+
+  // ======================== 汇总报表 ========================
+
+  /// 获取日报数据(今天)
+  static PeriodSummary getDailyReport() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final records = getVideoRecords(today);
+    records.sort((a, b) => b.watchedAt.compareTo(a.watchedAt));
+    final seconds = getSeconds(today);
+    return PeriodSummary(
+      totalSeconds: seconds,
+      studyDays: seconds > 0 ? 1 : 0,
+      videoCount: records.length,
+      records: records,
+      dailyData: [(date: today, seconds: seconds)],
+      averageDailySeconds: seconds,
+      studyStreak: getStudyStreak(),
+      maxDaySeconds: seconds,
+      maxDayDate: seconds > 0 ? today : null,
+      recordsByDate: records.isNotEmpty
+          ? [
+              DateGroupedRecords(
+                date: today,
+                totalSeconds: seconds,
+                records: records,
+              ),
+            ]
+          : [],
+    );
+  }
+
+  /// 获取周报数据(近7天)
+  static PeriodSummary getWeeklyReport() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekAgo = today.subtract(const Duration(days: 6));
+    final dailyData = getRecentDays(7);
+    final records = getVideoRecordsRange(weekAgo, today);
+    final recordsByDate = getRecordsGroupedByDate(weekAgo, today);
+    var totalSeconds = 0;
+    var studyDays = 0;
+    var maxDaySeconds = 0;
+    DateTime? maxDayDate;
+    for (final d in dailyData) {
+      totalSeconds += d.seconds;
+      if (d.seconds > 0) studyDays++;
+      if (d.seconds > maxDaySeconds) {
+        maxDaySeconds = d.seconds;
+        maxDayDate = d.date;
+      }
+    }
+    return PeriodSummary(
+      totalSeconds: totalSeconds,
+      studyDays: studyDays,
+      videoCount: records.length,
+      records: records,
+      dailyData: dailyData,
+      averageDailySeconds: totalSeconds ~/ 7,
+      studyStreak: getStudyStreak(),
+      maxDaySeconds: maxDaySeconds,
+      maxDayDate: maxDayDate,
+      recordsByDate: recordsByDate,
+    );
+  }
+
+  /// 获取月报数据(近30天)
+  static PeriodSummary getMonthlyReport() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final monthAgo = today.subtract(const Duration(days: 29));
+    final dailyData = getRecentDays(30);
+    final records = getVideoRecordsRange(monthAgo, today);
+    final recordsByDate = getRecordsGroupedByDate(monthAgo, today);
+    var totalSeconds = 0;
+    var studyDays = 0;
+    var maxDaySeconds = 0;
+    DateTime? maxDayDate;
+    for (final d in dailyData) {
+      totalSeconds += d.seconds;
+      if (d.seconds > 0) studyDays++;
+      if (d.seconds > maxDaySeconds) {
+        maxDaySeconds = d.seconds;
+        maxDayDate = d.date;
+      }
+    }
+    return PeriodSummary(
+      totalSeconds: totalSeconds,
+      studyDays: studyDays,
+      videoCount: records.length,
+      records: records,
+      dailyData: dailyData,
+      averageDailySeconds: totalSeconds ~/ 30,
+      studyStreak: getStudyStreak(),
+      maxDaySeconds: maxDaySeconds,
+      maxDayDate: maxDayDate,
+      recordsByDate: recordsByDate,
+    );
+  }
+
+  // ======================== 工具方法 ========================
 
   /// 格式化时长为可读字符串
   static String formatDuration(int seconds) {
@@ -92,5 +404,31 @@ class StatsRepo {
     if (h > 0) return '$h小时$m分钟';
     if (m > 0) return '$m分钟';
     return '$seconds秒';
+  }
+
+  /// 格式化时长为简短形式(用于图表和标签)
+  static String formatDurationShort(int seconds) {
+    if (seconds <= 0) return '0m';
+    final h = seconds ~/ 3600;
+    final m = (seconds % 3600) ~/ 60;
+    if (h > 0) return '${h}h${m > 0 ? "${m}m" : ""}';
+    if (m > 0) return '${m}m';
+    return '${seconds}s';
+  }
+
+  /// 格式化日期为 MM月dd日
+  static String formatDate(DateTime date) {
+    return '${date.month}月${date.day}日';
+  }
+
+  /// 格式化日期为 MM/dd
+  static String formatDateShort(DateTime date) {
+    return '${date.month}/${date.day}';
+  }
+
+  /// 获取星期几的中文
+  static String weekdayChinese(DateTime date) {
+    const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    return weekdays[date.weekday - 1];
   }
 }

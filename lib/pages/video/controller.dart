@@ -45,6 +45,7 @@ import 'package:PiliPlus/pages/video/note/view.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
+import 'package:PiliPlus/pages/learning/stats_repo.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
@@ -752,6 +753,10 @@ class VideoDetailController extends GetxController
       height: firstVideo.height,
       volume: volume,
       autoFullScreenFlag: autoFullScreenFlag,
+      // [PiliPlus Learning] 传入视频元数据用于学习记录
+      videoTitle: args['title'] as String?,
+      videoUpName: _tryGetUpName(),
+      videoCover: cover.value,
     );
 
     if (isClosed) return;
@@ -1227,6 +1232,16 @@ class VideoDetailController extends GetxController
           videoType: videoType,
         );
       } catch (_) {}
+    }
+  }
+
+  /// [PiliPlus Learning] 尝试获取当前视频的UP主名称
+  String? _tryGetUpName() {
+    try {
+      final introCtr = Get.find<UgcIntroController>(tag: heroTag);
+      return introCtr.videoDetail.value.owner?.name;
+    } catch (_) {
+      return null;
     }
   }
 

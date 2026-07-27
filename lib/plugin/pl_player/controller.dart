@@ -81,6 +81,11 @@ class PlPlayerController with BlockConfigMixin {
   Timer? _statsTimer;
   int _accumulatedSeconds = 0;
   DateTime? _playStartTime;
+  // 当前播放视频的元数据(用于学习记录)
+  String? _statsVideoTitle;
+  String? _statsVideoUpName;
+  String? _statsVideoCover;
+  String? _statsVideoBvid;
 
   final Rx<DataStatus> dataStatus = Rx(.none);
 
@@ -611,6 +616,10 @@ class PlPlayerController with BlockConfigMixin {
     VoidCallback? onInit,
     Volume? volume,
     bool autoFullScreenFlag = false,
+    // [PiliPlus Learning] 视频元数据(用于学习记录)
+    String? videoTitle,
+    String? videoUpName,
+    String? videoCover,
   }) async {
     try {
       _processing = true;
@@ -630,6 +639,11 @@ class PlPlayerController with BlockConfigMixin {
       _bvid = bvid;
       this.cid = cid;
       _epid = epid;
+      // [PiliPlus Learning] 保存视频元数据用于学习记录
+      _statsVideoTitle = videoTitle;
+      _statsVideoUpName = videoUpName;
+      _statsVideoCover = videoCover;
+      _statsVideoBvid = bvid;
       _seasonId = seasonId;
       _pgcType = pgcType;
 
@@ -1571,7 +1585,18 @@ class PlPlayerController with BlockConfigMixin {
     if (elapsed > 0) {
       _accumulatedSeconds += elapsed;
       try {
-        StatsRepo.addSeconds(DateTime.now(), elapsed);
+        StatsRepo.addSeconds(now, elapsed);
+        // 记录视频观看明细(只在有视频标题时记录)
+        if (_statsVideoTitle != null && _statsVideoTitle!.isNotEmpty) {
+          StatsRepo.addVideoRecord(VideoWatchRecord(
+            title: _statsVideoTitle!,
+            upName: _statsVideoUpName ?? '',
+            cover: _statsVideoCover,
+            bvid: _statsVideoBvid,
+            seconds: elapsed,
+            watchedAt: now,
+          ));
+        }
       } catch (_) {}
     }
     _playStartTime = DateTime.now();

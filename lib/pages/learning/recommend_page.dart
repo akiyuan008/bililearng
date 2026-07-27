@@ -1,6 +1,6 @@
 // [PiliPlus Learning] 学习推荐页
-// 展示知识区和科技区排行榜视频,极简瀑布流 UI。
-// 只显示学习类视频,屏蔽所有非学习内容。
+// 分页展示知识区和科技区排行榜视频,每页8个。
+// 下拉刷新: 从视频池随机换一批(可撤回),底部按钮可顺序翻页。
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -29,44 +29,165 @@ class _RecommendPageState extends State<RecommendPage> {
       appBar: AppBar(
         title: const Text('学习推荐'),
         actions: [
+          // 撤回按钮
+          Obx(() => IconButton(
+                tooltip: '撤回刷新',
+                icon: const Icon(Icons.undo),
+                onPressed: _ctr.canUndo.value ? _ctr.undoRefresh : null,
+              )),
           IconButton(
             tooltip: '搜索',
             icon: const Icon(Icons.search),
             onPressed: () => Get.toNamed('/search'),
           ),
           IconButton(
-            tooltip: '刷新',
-            icon: const Icon(Icons.refresh),
+            tooltip: '重新获取',
+            icon: const Icon(Icons.autorenew),
             onPressed: _ctr.refreshRecommend,
           ),
         ],
       ),
       body: Obx(() {
-        if (_ctr.isLoading.value && _ctr.videoList.isEmpty) {
+        if (_ctr.isLoading.value && _ctr.currentPage.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (_ctr.videoList.isEmpty) {
+        if (_ctr.currentPage.isEmpty) {
           return _buildEmpty();
         }
-        return RefreshIndicator(
-          onRefresh: _ctr.refreshRecommend,
-          child: WaterfallFlow.builder(
-            gridDelegate:
-                const SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+        return Column(
+          children: [
+            // 页码指示器
+            _buildPageIndicator(),
+            // 视频列表
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _ctr.shuffleRefresh,
+                child: WaterfallFlow.builder(
+                  gridDelegate:
+                      const SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: _ctr.currentPage.length,
+                  itemBuilder: (context, index) {
+                    return _VideoCard(item: _ctr.currentPage[index]);
+                  },
+                ),
+              ),
             ),
-            padding: const EdgeInsets.all(8),
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: _ctr.videoList.length,
-            itemBuilder: (context, index) {
-              return _VideoCard(item: _ctr.videoList[index]);
-            },
-          ),
+            // 底部导航栏
+            _buildBottomBar(),
+          ],
         );
       }),
     );
+  }
+
+  Widget _buildPageIndicator() {
+    return Obx(() => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.school_outlined,
+                size: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 6),
+              if (_ctr.refreshCount.value > 0) ...[
+                // 刷新模式
+                Text(
+                  '已刷新 ${_ctr.refreshCount.value} 次',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ] else ...[
+                // 顺序浏览模式
+                Text(
+                  '第 ${_ctr.pageIndex.value} / ${_ctr.totalPages.value} 页',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '池中 ${_ctr.poolSize} 个',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '下拉换一批',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildBottomBar() {
+    return Obx(() => Container(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border(
+              top: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // 撤回
+              TextButton.icon(
+                onPressed:
+                    _ctr.canUndo.value ? _ctr.undoRefresh : null,
+                icon: const Icon(Icons.undo, size: 18),
+                label: const Text('撤回'),
+              ),
+              // 换一批
+              FilledButton.tonalIcon(
+                onPressed: () => _ctr.shuffleRefresh(),
+                icon: const Icon(Icons.shuffle, size: 18),
+                label: const Text('换一批'),
+              ),
+              // 下一页
+              TextButton.icon(
+                onPressed: () => _ctr.nextPage(),
+                icon: const Icon(Icons.arrow_forward, size: 18),
+                label: const Text('下一页'),
+              ),
+            ],
+          ),
+        ));
   }
 
   Widget _buildEmpty() {
@@ -130,7 +251,6 @@ class _VideoCard extends StatelessWidget {
     final aid = item.aid;
     final upName = item.owner?.name ?? '';
     final tname = item.tname ?? '';
-    final view = item.stat?.view;
 
     return GestureDetector(
       onTap: () async {
@@ -146,7 +266,6 @@ class _VideoCard extends StatelessWidget {
           );
           return;
         }
-        // 没有 cid 时通过 ab2c 获取
         SmartDialog.showLoading<dynamic>(msg: '获取视频中...');
         try {
           final cid = await SearchHttp.ab2c(aid: aid, bvid: bvid);
@@ -235,7 +354,8 @@ class _VideoCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 10,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ),
