@@ -139,7 +139,7 @@ void main() async {
   Request.setCookie();
   RequestUtils.syncHistoryStatus();
 
-  SmartDialog.config.toast = SmartConfigToast(displayType: .onlyRefresh);
+  SmartDialog.config.toast = SmartConfigToast(displayType: SmartToastType.onlyRefresh);
 
   if (PlatformUtils.isMobile) {
     SystemChrome.setEnabledSystemUIMode(.edgeToEdge);

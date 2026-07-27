@@ -82,7 +82,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
         ),
       ),
       body: Padding(
-        padding: .only(left: padding.left, right: padding.right),
+        padding: EdgeInsets.only(left: padding.left, right: padding.right),
         child: Center(
           child: SizedBox(
             width: width,

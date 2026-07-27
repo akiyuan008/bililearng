@@ -388,7 +388,7 @@ class _MainAppState extends PopScopeState<MainApp>
                               horizontal: 12,
                             ),
                             indicatorShape: const RoundedRectangleBorder(
-                              borderRadius: .all(.circular(16)),
+                              borderRadius: .all(Radius.circular(16)),
                             ),
                             onDestinationSelected: _mainController.setIndex,
                             selectedIndex: _mainController.selectedIndex.value,

@@ -60,7 +60,7 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       appBar: _buildAppBar,
       body: Padding(
-        padding: .only(left: padding.left, right: padding.right),
+        padding: EdgeInsets.only(left: padding.left, right: padding.right),
         child: CustomScrollView(
           slivers: [
             if (_searchController.searchSuggestion) _buildSearchSuggest(),
@@ -78,7 +78,7 @@ class _SearchPageState extends State<SearchPage> {
               )
             else
               _buildHistory,
-            SliverPadding(padding: .only(bottom: padding.bottom)),
+            SliverPadding(padding: EdgeInsets.only(bottom: padding.bottom)),
           ],
         ),
       ),
@@ -192,7 +192,7 @@ class _SearchPageState extends State<SearchPage> {
       color: outline,
     );
     return SliverPadding(
-      padding: .fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         10,
         !isTrending && (isPortrait || _searchController.enableTrending)
             ? 4
@@ -219,7 +219,7 @@ class _SearchPageState extends State<SearchPage> {
                                 visualDensity: .compact,
                                 tapTargetSize: .shrinkWrap,
                                 padding: WidgetStatePropertyAll(
-                                  .symmetric(horizontal: 10),
+                                  EdgeInsets.symmetric(horizontal: 10),
                                 ),
                               ),
                               onPressed: () => Get.toNamed('/searchTrending'),
@@ -249,7 +249,7 @@ class _SearchPageState extends State<SearchPage> {
                       visualDensity: .compact,
                       tapTargetSize: .shrinkWrap,
                       padding: WidgetStatePropertyAll(
-                        .symmetric(horizontal: 10),
+                        EdgeInsets.symmetric(horizontal: 10),
                       ),
                     ),
                     onPressed: isTrending
@@ -293,7 +293,7 @@ class _SearchPageState extends State<SearchPage> {
         }
         final secondary = theme.colorScheme.secondary;
         return SliverPadding(
-          padding: .fromLTRB(
+          padding: EdgeInsets.fromLTRB(
             10,
             !isPortrait
                 ? 25
@@ -327,7 +327,7 @@ class _SearchPageState extends State<SearchPage> {
                           visualDensity: .compact,
                           tapTargetSize: .shrinkWrap,
                           padding: WidgetStatePropertyAll(
-                            .symmetric(horizontal: 10),
+                            EdgeInsets.symmetric(horizontal: 10),
                           ),
                         ),
                         onPressed: _searchController.onClearHistory,

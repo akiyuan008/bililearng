@@ -145,7 +145,7 @@ class _GroupPanelState extends State<GroupPanel> {
               style: const ButtonStyle(
                 visualDensity: .compact,
                 padding: WidgetStatePropertyAll(
-                  .symmetric(horizontal: 18, vertical: 14),
+                  EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 ),
               ),
             ),
@@ -158,7 +158,7 @@ class _GroupPanelState extends State<GroupPanel> {
           color: theme.disabledColor.withValues(alpha: 0.08),
         ),
         Padding(
-          padding: .only(
+          padding: EdgeInsets.only(
             right: 20,
             top: 12,
             bottom: MediaQuery.viewPaddingOf(context).bottom + 12,

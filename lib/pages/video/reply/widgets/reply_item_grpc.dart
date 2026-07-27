@@ -993,7 +993,7 @@ class ReplyItemGrpc extends StatelessWidget {
     final style = theme.textTheme.titleSmall!;
 
     return Padding(
-      padding: .only(
+      padding: EdgeInsets.only(
         bottom: MediaQuery.viewPaddingOf(context).bottom + 20,
       ),
       child: Column(

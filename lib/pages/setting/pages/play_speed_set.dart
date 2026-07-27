@@ -68,10 +68,10 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
             TextFormField(
               autofocus: true,
               initialValue: initialValue,
-              keyboardType: const .numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: '自定义倍速',
-                border: OutlineInputBorder(borderRadius: .all(.circular(6))),
+                border: OutlineInputBorder(borderRadius: .all(Radius.circular(6))),
               ),
               onChanged: (value) => initialValue = value,
               inputFormatters: FilteringText.decimal,

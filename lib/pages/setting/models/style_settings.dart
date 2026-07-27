@@ -442,7 +442,7 @@ void _showUiScaleDialog(
             ),
             TextFormField(
               controller: textController,
-              keyboardType: const .numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 LengthLimitingTextInputFormatter(4),
                 FilteringTextInputFormatter.allow(RegExp(r'[\d.]+')),
@@ -575,7 +575,7 @@ void _showSpringDialog(BuildContext context, _) {
           (index) => TextFormField(
             autofocus: index == 0,
             initialValue: springDescription[index],
-            keyboardType: .numberWithOptions(
+            keyboardType: TextInputType.numberWithOptions(
               signed: !physicalMode && index == 1,
               decimal: true,
             ),

@@ -83,7 +83,7 @@ class _MemberOpusState extends State<MemberOpus>
             child: SlideTransition(
               position: fabAnimation,
               child: Padding(
-                padding: .only(
+                padding: EdgeInsets.only(
                   bottom: bottom + kFloatingActionButtonMargin,
                 ),
                 child: FloatingActionButton.extended(

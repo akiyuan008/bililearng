@@ -53,7 +53,7 @@ class _FullScreenScSizeState extends State<FullScreenScSize> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final padding = MediaQuery.viewPaddingOf(context);
-    _padding = .only(
+    _padding = EdgeInsets.only(
       right: padding.right + 17,
       left: padding.left + 25,
       bottom: padding.bottom + 25,

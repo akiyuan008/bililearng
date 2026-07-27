@@ -493,7 +493,7 @@ void _showDecimalDialog(
       content: TextFormField(
         autofocus: true,
         initialValue: value,
-        keyboardType: const .numberWithOptions(decimal: true),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         onChanged: (val) => value = val,
         inputFormatters: FilteringText.decimal,
         decoration: suffix == null ? null : InputDecoration(suffixText: suffix),

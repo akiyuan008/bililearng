@@ -129,7 +129,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                     value: ctr.dynamicColor.value,
                     onChanged: _onChanged,
                     materialTapTargetSize: .shrinkWrap,
-                    visualDensity: const .new(horizontal: -4, vertical: -4),
+                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                   ),
                 ),
                 onTap: _onChanged,

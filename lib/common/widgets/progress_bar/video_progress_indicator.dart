@@ -121,7 +121,7 @@ class RenderProgressBar extends RenderBox {
     final paint = Paint()..style = .fill;
 
     canvas.clipRect(
-      .fromLTRB(0, size.height - height, size.width, size.height),
+      Rect.fromLTRB(0, size.height - height, size.width, size.height),
     );
 
     final radius = Radius.circular(_radius);

@@ -150,7 +150,7 @@ class _DynTopicPageState extends State<DynTopicPage>
             child: SlideTransition(
               position: fabAnimation,
               child: Padding(
-                padding: .only(
+                padding: EdgeInsets.only(
                   bottom: padding.bottom + kFloatingActionButtonMargin,
                 ),
                 child: FloatingActionButton.extended(
@@ -302,7 +302,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                           ? null
                           : colorScheme.onSurfaceVariant,
                       padding: const EdgeInsets.symmetric(horizontal: 10),
-                      visualDensity: const .new(horizontal: -4, vertical: -4),
+                      visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: _controller.onFav,

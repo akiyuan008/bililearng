@@ -128,7 +128,7 @@ class _MemberVideoState extends State<MemberVideo>
                     child: SlideTransition(
                       position: fabAnimation,
                       child: Padding(
-                        padding: .only(
+                        padding: EdgeInsets.only(
                           bottom: padding.bottom + kFloatingActionButtonMargin,
                         ),
                         child: FloatingActionButton.extended(

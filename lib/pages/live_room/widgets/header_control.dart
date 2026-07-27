@@ -349,7 +349,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                   Expanded(
                     child: ListView(
                       controller: scrollController,
-                      padding: .only(
+                      padding: EdgeInsets.only(
                         bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
                       ),
                       children: controller.stream.mapIndexed((si, stream) {

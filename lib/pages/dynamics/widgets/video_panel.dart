@@ -100,7 +100,7 @@ Widget videoSeasonWidget(
                           DecoratedBox(
                             decoration: const BoxDecoration(
                               color: Colors.black45,
-                              borderRadius: .all(.circular(4)),
+                              borderRadius: .all(Radius.circular(4)),
                             ),
                             child: Text(' $durationText '),
                           ),

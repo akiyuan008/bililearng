@@ -320,7 +320,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
       : const NoBottomPaddingFabLocation();
 
   Widget get fabButton => Padding(
-    padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
+    padding: EdgeInsets.only(bottom: padding.bottom + kFloatingActionButtonMargin),
     child: replyButton,
   );
 

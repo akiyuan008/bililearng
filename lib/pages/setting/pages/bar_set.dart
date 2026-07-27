@@ -43,7 +43,7 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final viewPad = MediaQuery.viewPaddingOf(context);
-    padding = .only(top: 10, right: viewPad.right + 34, bottom: viewPad.bottom);
+    padding = EdgeInsets.only(top: 10, right: viewPad.right + 34, bottom: viewPad.bottom);
   }
 
   void saveEdit() {

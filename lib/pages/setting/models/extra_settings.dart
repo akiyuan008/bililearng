@@ -843,7 +843,7 @@ void _showDmHeightDialog(BuildContext context, VoidCallback setState) {
       content: TextFormField(
         autofocus: true,
         initialValue: danmakuLineHeight,
-        keyboardType: const .numberWithOptions(decimal: true),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         onChanged: (value) => danmakuLineHeight = value,
         inputFormatters: FilteringText.decimal,
       ),
@@ -885,7 +885,7 @@ void _showTouchSlopDialog(BuildContext context, VoidCallback setState) {
       content: TextFormField(
         autofocus: true,
         initialValue: initialValue,
-        keyboardType: const .numberWithOptions(decimal: true),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         onChanged: (value) => initialValue = value,
         inputFormatters: FilteringText.decimal,
       ),
@@ -1171,7 +1171,7 @@ void _showProxyDialog(BuildContext context) {
             decoration: const InputDecoration(
               isDense: true,
               labelText: '请输入Port',
-              border: OutlineInputBorder(borderRadius: .all(.circular(6))),
+              border: OutlineInputBorder(borderRadius: .all(Radius.circular(6))),
             ),
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: (e) => systemProxyPort = e,

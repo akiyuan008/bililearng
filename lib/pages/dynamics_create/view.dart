@@ -49,7 +49,7 @@ class CreateDynPanel extends CommonRichTextPubPage {
     this.editConfig,
     this.title,
     this.isPrivate = false,
-    this.replyOption = .allow,
+    this.replyOption = ReplyOptionType.allow,
     this.onSuccess,
   });
 
@@ -68,7 +68,7 @@ class CreateDynPanel extends CommonRichTextPubPage {
     BuildContext context, {
     String? title,
     bool isPrivate = false,
-    ReplyOptionType replyOption = .allow,
+    ReplyOptionType replyOption = ReplyOptionType.allow,
     List<RichTextItem>? items,
     List<PicModel>? pics,
     Pair<int, String>? topic,

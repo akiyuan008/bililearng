@@ -126,7 +126,7 @@ class _FavPanelState extends State<FavPanel> {
               style: const ButtonStyle(
                 visualDensity: .compact,
                 padding: WidgetStatePropertyAll(
-                  .symmetric(horizontal: 18, vertical: 14),
+                  EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 ),
               ),
             ),
@@ -139,7 +139,7 @@ class _FavPanelState extends State<FavPanel> {
           color: theme.outline.withValues(alpha: 0.1),
         ),
         Padding(
-          padding: .only(
+          padding: EdgeInsets.only(
             left: 20,
             right: 20,
             top: 12,

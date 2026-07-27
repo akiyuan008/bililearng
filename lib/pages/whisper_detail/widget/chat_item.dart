@@ -95,17 +95,17 @@ class ChatItem extends StatelessWidget {
                   ? theme.colorScheme.secondaryContainer
                   : theme.colorScheme.onInverseSurface,
               borderRadius: isOwner
-                  ? const EdgeInsets.only(
-                      topLeft: .circular(16),
-                      topRight: .circular(16),
-                      bottomLeft: .circular(16),
-                      bottomRight: .circular(6),
+                  ? const BorderRadius.only(
+            topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(6),
                     )
-                  : const EdgeInsets.only(
-                      topLeft: .circular(16),
-                      topRight: .circular(16),
-                      bottomLeft: .circular(6),
-                      bottomRight: .circular(16),
+                  : const BorderRadius.only(
+            topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                      bottomLeft: Radius.circular(6),
+                      bottomRight: Radius.circular(16),
                     ),
             ),
             padding: isPic

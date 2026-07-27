@@ -764,7 +764,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         ..onSendDanmaku(),
     );
     return Padding(
-      padding: .only(bottom: 12, top: isPortrait ? 12 : 0),
+      padding: EdgeInsets.only(bottom: 12, top: isPortrait ? 12 : 0),
       child: _liveRoomController.showSuperChat
           ? PageView<CustomHorizontalDragGestureRecognizer>(
               key: pageKey,
@@ -787,10 +787,10 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   Widget get _buildInputWidget {
     final child = Container(
-      padding: .only(top: 5, left: 10, right: 10, bottom: padding.bottom),
+      padding: EdgeInsets.only(top: 5, left: 10, right: 10, bottom: padding.bottom),
       height: 70 + padding.bottom,
       decoration: const BoxDecoration(
-        borderRadius: .vertical(top: .circular(20)),
+        borderRadius: .vertical(top: Radius.circular(20)),
         border: Border(top: BorderSide(color: Color(0x1AFFFFFF))),
         color: Color(0x1AFFFFFF),
       ),

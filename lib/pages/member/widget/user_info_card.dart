@@ -534,7 +534,7 @@ class UserInfoCard extends StatelessWidget {
     if (pendant == null || pendant.isEmpty) {
       child = DecoratedBox(
         decoration: BoxDecoration(
-          border: .all(width: 2, color: scheme.surface),
+          border: Border.all(width: 2, color: scheme.surface),
           shape: .circle,
         ),
         child: Padding(padding: const EdgeInsets.all(2), child: child),
@@ -791,7 +791,7 @@ class UserInfoCard extends StatelessWidget {
             children: [
               const SizedBox(width: 20),
               Padding(
-                padding: .only(
+                padding: EdgeInsets.only(
                   top: 10,
                   bottom: card.prInfo?.content?.isNotEmpty == true ? 0 : 10,
                 ),

@@ -177,7 +177,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
     ),
     child: ListView(
       physics: platformClampingPhysics,
-      padding: .only(
+      padding: EdgeInsets.only(
         top: 12,
         bottom: 12 + MediaQuery.viewPaddingOf(context).bottom,
       ),

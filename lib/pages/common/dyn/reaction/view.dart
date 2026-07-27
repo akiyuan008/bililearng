@@ -80,7 +80,7 @@ class DynReactPage extends StatelessWidget {
       key: const PageStorageKey(DynType.reaction),
       slivers: [
         SliverPadding(
-          padding: .only(
+          padding: EdgeInsets.only(
             bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
           ),
           sliver: Obx(() => buildBody(theme, controller.loadingState.value)),

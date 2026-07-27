@@ -92,7 +92,7 @@ class PBadge extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: br,
         color: bgColor,
-        border: .all(color: borderColor),
+        border: Border.all(color: borderColor),
       ),
       child: Text(
         text!,

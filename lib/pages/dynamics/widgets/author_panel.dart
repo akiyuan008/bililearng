@@ -162,7 +162,7 @@ class AuthorPanel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(4)),
-              border: .all(width: 1.25, color: theme.colorScheme.primary),
+              border: Border.all(width: 1.25, color: theme.colorScheme.primary),
             ),
             child: Text(
               moduleTagText,

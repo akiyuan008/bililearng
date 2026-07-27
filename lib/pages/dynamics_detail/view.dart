@@ -244,7 +244,7 @@ class _DynamicDetailPageState
       items: items,
       pics: opus?.pics,
       topic: topic,
-      replyOption: replyOption ?? .allow,
+      replyOption: replyOption ?? ReplyOption.allow,
       isPrivate: item.modules.moduleAuthor?.badgeText != null,
       editConfig: (
         dynId: item.idStr,
@@ -386,7 +386,7 @@ class _DynamicDetailPageState
                 duration: const Duration(milliseconds: 200),
                 child: Center(
                   child: SizedBox.fromSize(
-                    size: const .square(40),
+                    size: const Size.square(40),
                     child: Material(
                       type: .circle,
                       color: theme.colorScheme.onSecondary,
@@ -452,7 +452,7 @@ class _DynamicDetailPageState
           child: CustomScrollView(
             slivers: [
               SliverPadding(
-                padding: .only(
+                padding: EdgeInsets.only(
                   left: padding,
                   bottom: this.padding.bottom + 100,
                 ),
@@ -551,7 +551,7 @@ class _DynamicDetailPageState
 
     final moduleStat = controller.dynItem.modules.moduleStat;
     return Padding(
-      padding: .only(left: padding.left, right: padding.right),
+      padding: EdgeInsets.only(left: padding.left, right: padding.right),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,

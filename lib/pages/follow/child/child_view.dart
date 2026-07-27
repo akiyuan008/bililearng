@@ -119,7 +119,7 @@ class _FollowChildPageState extends State<FollowChildPage>
             child: SlideTransition(
               position: fabAnimation,
               child: Padding(
-                padding: .only(
+                padding: EdgeInsets.only(
                   bottom: kFloatingActionButtonMargin + padding.bottom,
                 ),
                 child: FloatingActionButton.extended(

@@ -141,9 +141,9 @@ extension type LevelCanvas(Canvas _) implements Canvas {
   void drawBolt() => drawParagraph(_boltIcon, const Offset(840, 5));
 
   void _draw1(Paint paint) {
-    drawRRect(const .fromLTRBXY(673, _botY, 833, _botYB, 20, 20), paint);
-    drawRRect(.fromLTRBAndCorners(673, _topY, 787, _topYB, topLeft: _r, bottomLeft: _r, topRight: _r), paint);
-    drawRect(const EdgeInsets.fromLTRB(719, _topYB, 787, _botY), paint);
+    drawRRect(const RRect.fromLTRBXY(673, _botY, 833, _botYB, 20, 20), paint);
+    drawRRect(RRect.fromLTRBAndCorners(673, _topY, 787, _topYB, topLeft: _r, bottomLeft: _r, topRight: _r), paint);
+    drawRect(const Rect.fromLTRB(719, _topYB, 787, _botY), paint);
   }
 
   void drawLEDigit(int digit, Paint paint) {
@@ -229,7 +229,7 @@ extension type LevelCanvas(Canvas _) implements Canvas {
     if (tl == .zero && tr == .zero && bl == .zero && br == .zero) {
       drawRect(.fromLTRB(l, t, r, b), paint);
     } else {
-      drawRRect(.fromLTRBAndCorners(l, t, r, b, topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br), paint);
+      drawRRect(RRect.fromLTRBAndCorners(l, t, r, b, topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br), paint);
     }
   }
 
@@ -245,11 +245,11 @@ extension type LevelCanvas(Canvas _) implements Canvas {
 
     canvas
       // L
-      ..drawRRect(.fromLTRBAndCorners(56, lvTop, llr, _botYB, topLeft: _r, topRight: _r, bottomLeft: _r), paint)
-      ..drawRRect(.fromLTRBAndCorners(llr - 1, _botY, 256, _botYB, topRight: _r, bottomRight: _r), paint)
+      ..drawRRect(RRect.fromLTRBAndCorners(56, lvTop, llr, _botYB, topLeft: _r, topRight: _r, bottomLeft: _r), paint)
+      ..drawRRect(RRect.fromLTRBAndCorners(llr - 1, _botY, 256, _botYB, topRight: _r, bottomRight: _r), paint)
       // V
-      ..drawRRect(.fromLTRBAndCorners(vLeft, lvTop, 363, vtb + 1, topLeft: _r, topRight: _r), paint)
-      ..drawRRect(.fromLTRBAndCorners(476, lvTop, 543, vtb + 1, topLeft: _r, topRight: _r), paint)
+      ..drawRRect(RRect.fromLTRBAndCorners(vLeft, lvTop, 363, vtb + 1, topLeft: _r, topRight: _r), paint)
+      ..drawRRect(RRect.fromLTRBAndCorners(476, lvTop, 543, vtb + 1, topLeft: _r, topRight: _r), paint)
       ..drawPath(
         Path()
           ..moveTo(vLeft, vtb)
@@ -280,11 +280,11 @@ extension type LevelCanvas(Canvas _) implements Canvas {
     final double right = bolt ? _extendR : _totalR;
     const double blockTop = 48;
     drawRRect(
-      RRect.fromLTRBAndCorners(0, blockTop, right, _totalB, topLeft: radius, bottomLeft: radius, bottomRight: radius),
+      RRectRRect.fromLTRBAndCorners(0, blockTop, right, _totalB, topLeft: radius, bottomLeft: radius, bottomRight: radius),
       paint,
     );
     drawRRect(
-      RRect.fromLTRBAndCorners(576, 0, right, blockTop + 1, topLeft: radius, topRight: radius),
+      RRectRRect.fromLTRBAndCorners(576, 0, right, blockTop + 1, topLeft: radius, topRight: radius),
       paint,
     );
 

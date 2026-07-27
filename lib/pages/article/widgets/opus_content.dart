@@ -583,7 +583,7 @@ class OpusContent extends StatelessWidget {
               }
               return Material(
                 shape: const RoundedRectangleBorder(
-                  borderRadius: .all(.circular(8)),
+                  borderRadius: .all(Radius.circular(8)),
                 ),
                 color: colorScheme.onInverseSurface,
                 child: InkWell(
@@ -882,7 +882,7 @@ Widget moduleBlockedItem(
                   horizontal: -4,
                 ),
                 shape: const RoundedRectangleBorder(
-                  borderRadius: .all(.circular(6)),
+                  borderRadius: .all(Radius.circular(6)),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 10),
               ),

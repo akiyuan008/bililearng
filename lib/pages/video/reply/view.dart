@@ -125,7 +125,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
               child: SlideTransition(
                 position: fabAnimation,
                 child: Padding(
-                  padding: .only(
+                  padding: EdgeInsets.only(
                     right: kFloatingActionButtonMargin,
                     bottom: kFloatingActionButtonMargin + bottom,
                   ),
@@ -187,7 +187,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                 return Container(
                   height: 125,
                   alignment: .center,
-                  margin: .only(bottom: bottom),
+                  margin: EdgeInsets.only(bottom: bottom),
                   child: Text(
                     _videoReplyController.isEnd ? '没有更多了' : '加载中...',
                     textAlign: .center,

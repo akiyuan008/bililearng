@@ -140,7 +140,7 @@ class _MemberPageState extends State<MemberPage> {
             },
             body: _userController.tab2?.isNotEmpty == true
                 ? Padding(
-                    padding: .only(left: padding.left, right: padding.right),
+                    padding: EdgeInsets.only(left: padding.left, right: padding.right),
                     child: Column(
                       children: [
                         if ((_userController.tab2?.length ?? 0) > 1)
@@ -193,7 +193,7 @@ class _MemberPageState extends State<MemberPage> {
       builder: (context) {
         final scheme = ColorScheme.of(context);
         return Padding(
-          padding: .only(bottom: MediaQuery.viewPaddingOf(context).bottom + 30),
+          padding: EdgeInsets.only(bottom: MediaQuery.viewPaddingOf(context).bottom + 30),
           child: Column(
             mainAxisSize: .min,
             children: [
@@ -242,9 +242,9 @@ class _MemberPageState extends State<MemberPage> {
                         tapTargetSize: .shrinkWrap,
                         minimumSize: const Size(68, 40),
                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                        visualDensity: const .new(horizontal: -2, vertical: -3),
+                        visualDensity: const VisualDensity(horizontal: -2, vertical: -3),
                         shape: const RoundedRectangleBorder(
-                          borderRadius: .all(.circular(6)),
+                          borderRadius: .all(Radius.circular(6)),
                         ),
                       ),
                       child: Text(

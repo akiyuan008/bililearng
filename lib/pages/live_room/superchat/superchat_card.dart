@@ -208,7 +208,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
           onSecondaryTapUp: PlatformUtils.isDesktop ? showMenu : null,
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: const .vertical(top: .circular(8)),
+              borderRadius: const .vertical(top: Radius.circular(8)),
               color: ColourUtils.parseColor(item.backgroundColor),
               border: Border(top: border, left: border, right: border),
               image: item.backgroundImage == null
@@ -244,7 +244,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
         ),
         Container(
           decoration: BoxDecoration(
-            borderRadius: const .vertical(bottom: .circular(8)),
+            borderRadius: const .vertical(bottom: Radius.circular(8)),
             color: bottomColor,
           ),
           padding: const EdgeInsets.all(8),

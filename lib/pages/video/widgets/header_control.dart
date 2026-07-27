@@ -1184,7 +1184,7 @@ class HeaderControlState extends State<HeaderControl>
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
                     child: Text.rich(
-                      style: .new(fontSize: 14, color: secondary),
+                      style: TextStyle(fontSize: 14, color: secondary),
                       TextSpan(
                         children: [
                           TextSpan(text: format.label),

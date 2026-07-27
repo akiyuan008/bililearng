@@ -123,7 +123,7 @@ class ZanButtonGrpc extends StatelessWidget {
               visualDensity: .compact,
               tapTargetSize: .shrinkWrap,
               padding: WidgetStatePropertyAll(.zero),
-              minimumSize: WidgetStatePropertyAll(.square(40)),
+              minimumSize: WidgetStatePropertyAll(Size.square(40)),
             ),
             onPressed: () => onHateReply(
               context,

@@ -84,7 +84,7 @@ class _MainReplyPageState extends State<MainReplyPage>
       floatingActionButton: SlideTransition(
         position: fabAnimation,
         child: Padding(
-          padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
+          padding: EdgeInsets.only(bottom: padding.bottom + kFloatingActionButtonMargin),
           child: FloatingActionButton(
             heroTag: null,
             onPressed: () {

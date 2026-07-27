@@ -83,7 +83,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
             builder: (_) => AlertDialog(
               title: Text('最短片段时长', style: titleStyle),
               content: TextFormField(
-                keyboardType: const .numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 controller: _textController,
                 autofocus: true,
                 decoration: const InputDecoration(suffixText: 's'),

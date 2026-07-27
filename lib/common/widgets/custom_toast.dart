@@ -12,7 +12,7 @@ class CustomToast extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
     return Container(
-      margin: .only(
+      margin: EdgeInsets.only(
         bottom: MediaQuery.viewPaddingOf(context).bottom + 30,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),

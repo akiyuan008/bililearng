@@ -178,7 +178,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
   final leadingStyle = const TextStyle(fontSize: 14);
 
   Widget _buildBody(ThemeData theme) => SingleChildScrollView(
-    padding: .only(bottom: MediaQuery.viewPaddingOf(context).bottom + 25),
+    padding: EdgeInsets.only(bottom: MediaQuery.viewPaddingOf(context).bottom + 25),
     child: Column(
       spacing: 12,
       children: [

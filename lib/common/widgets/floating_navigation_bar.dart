@@ -12,7 +12,7 @@ const _kIndicatorHeight = _kNavigationHeight - 2 * _kIndicatorPaddingInt;
 const _kIndicatorWidth = 86.0;
 const _kIndicatorPaddingInt = 4.0;
 const _kIndicatorPadding = EdgeInsets.all(_kIndicatorPaddingInt);
-const _kBorderRadius = BorderRadius.all(.circular(_kNavigationHeight / 2));
+const _kBorderRadius = BorderRadius.all(Radius.circular(_kNavigationHeight / 2));
 const _kNavigationShape = RoundedSuperellipseBorder(
   borderRadius: _kBorderRadius,
 );
@@ -76,7 +76,7 @@ class FloatingNavigationBar extends StatelessWidget {
 
     return UnconstrainedBox(
       child: Padding(
-        padding: .fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           padding.left,
           0,
           padding.right,

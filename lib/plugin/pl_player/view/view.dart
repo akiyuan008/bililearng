@@ -732,7 +732,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         e.lanDoc ?? e.lan,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const .new(color: Colors.white, fontSize: 13),
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
                       ),
                     );
                   }),
@@ -1710,11 +1710,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       return const SizedBox.shrink();
                     }
                     offstage = showControls;
-                  case .onlyShowFullScreen:
+                  case BtmProgressBehavior.onlyShowFullScreen:
                     offstage =
                         showControls ||
                         (!isFullScreen && !plPlayerController.isSeeking.value);
-                  case .onlyHideFullScreen:
+                  case BtmProgressBehavior.onlyHideFullScreen:
                     offstage =
                         showControls ||
                         (isFullScreen && !plPlayerController.isSeeking.value);

@@ -67,7 +67,7 @@ abstract class BaseVideoWebState<
           physics: ReloadScrollPhysics(controller: controller),
           slivers: [
             SliverPadding(
-              padding: .only(
+              padding: EdgeInsets.only(
                 bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
               ),
               sliver: Obx(

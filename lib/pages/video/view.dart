@@ -1575,7 +1575,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                             return FilledButton.tonal(
                               style: FilledButton.styleFrom(
                                 shape: const RoundedRectangleBorder(
-                                  borderRadius: .all(.circular(6)),
+                                  borderRadius: .all(Radius.circular(6)),
                                 ),
                                 backgroundColor: themeData
                                     .colorScheme

@@ -116,7 +116,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
       final imgWidth = maxWidth - padding;
       padding = padding / 2;
       return SliverPadding(
-        padding: .only(top: 10, left: padding, right: padding),
+        padding: EdgeInsets.only(top: 10, left: padding, right: padding),
         sliver: SliverMainAxisGroup(
           slivers: img.map((e) {
             return SliverToBoxAdapter(

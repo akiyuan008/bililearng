@@ -78,5 +78,5 @@ class RetryInterceptor extends Interceptor {
   }
 
   RetryInterceptor copyWith({Dio? client, int? count, int? delay}) =>
-      .new(client ?? _client, count ?? _count, delay ?? _delay);
+      RetryInterceptor(client ?? _client, count ?? _count, delay ?? _delay);
 }

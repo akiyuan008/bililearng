@@ -74,7 +74,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     double padding = max(maxWidth / 2 - Grid.smallCardWidth, 0);
     if (isPortrait) {
       return Padding(
-        padding: .symmetric(horizontal: padding),
+        padding: EdgeInsets.symmetric(horizontal: padding),
         child: SelectionArea(
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -113,7 +113,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverPadding(
-                  padding: .only(
+                  padding: EdgeInsets.only(
                     left: padding,
                     bottom: this.padding.bottom + 100,
                   ),
@@ -136,7 +136,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
         Expanded(
           flex: flex1,
           child: Padding(
-            padding: .only(right: padding),
+            padding: EdgeInsets.only(right: padding),
             child: Scaffold(
               backgroundColor: Colors.transparent,
               resizeToAvoidBottomInset: false,
@@ -369,12 +369,12 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     }
 
     return Padding(
-      padding: .only(left: padding.left, right: padding.right),
+      padding: EdgeInsets.only(left: padding.left, right: padding.right),
       child: Obx(() {
         final stats = controller.stats.value;
 
         Widget btn = Padding(
-          padding: .only(
+          padding: EdgeInsets.only(
             right: kFloatingActionButtonMargin,
             bottom:
                 kFloatingActionButtonMargin +
@@ -401,7 +401,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                   ),
                 ),
               ),
-              padding: .only(bottom: padding.bottom),
+              padding: EdgeInsets.only(bottom: padding.bottom),
               child: Row(
                 children: [
                   Expanded(
