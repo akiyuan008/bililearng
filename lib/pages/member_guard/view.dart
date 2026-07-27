@@ -81,7 +81,7 @@ class _MemberGuardState extends State<MemberGuard> {
             _buildTopItems(),
             if (response!.isNotEmpty)
               SliverPadding(
-                padding: const .only(top: 10),
+                padding: const EdgeInsets.only(top: 10),
                 sliver: SliverList.separated(
                   itemCount: response.length,
                   itemBuilder: (context, index) {
@@ -116,7 +116,7 @@ class _MemberGuardState extends State<MemberGuard> {
       behavior: .opaque,
       onTap: () => Get.toNamed('/member?mid=${item.uid}'),
       child: Padding(
-        padding: const .symmetric(vertical: 10.0),
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
         child: Column(
           spacing: 5,
           mainAxisSize: .min,

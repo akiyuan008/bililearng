@@ -798,7 +798,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         onTap: _liveRoomController.onSendDanmaku,
         behavior: .opaque,
         child: Padding(
-          padding: const .only(top: 5, bottom: 10),
+          padding: const EdgeInsets.only(top: 5, bottom: 10),
           child: Align(
             alignment: .topCenter,
             child: Row(

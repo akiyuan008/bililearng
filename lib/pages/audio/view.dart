@@ -410,7 +410,7 @@ class _AudioPageState extends State<AudioPage> {
                         height: 3,
                         decoration: BoxDecoration(
                           color: colorScheme.outline,
-                          borderRadius: const .all(.circular(3)),
+                          borderRadius: const BorderRadius.all(BorderRadius.circular(3)),
                         ),
                       ),
                     ),

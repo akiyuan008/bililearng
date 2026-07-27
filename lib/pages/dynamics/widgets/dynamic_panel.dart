@@ -256,13 +256,13 @@ class DynamicPanel extends StatelessWidget {
   Widget _buildDispute(ThemeData theme, ModuleDispute moduleDispute) {
     final child = Container(
       width: .infinity,
-      margin: const .fromLTRB(12, 2, 12, 6),
-      padding: const .symmetric(horizontal: 8, vertical: 6),
+      margin: const EdgeInsets.fromLTRB(12, 2, 12, 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: theme.colorScheme.secondaryContainer.withValues(
           alpha: theme.isLight ? 0.5 : 0.7,
         ),
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
       ),
       child: Text.rich(
         style: TextStyle(
@@ -280,7 +280,7 @@ class DynamicPanel extends StatelessWidget {
             WidgetSpan(
               alignment: .middle,
               child: Padding(
-                padding: const .only(right: 4),
+                padding: const EdgeInsets.only(right: 4),
                 child: Icon(
                   size: 15,
                   Icons.warning_rounded,

@@ -223,7 +223,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
 
   Widget _buildUserInfo(ThemeData theme, MemberInfoModel memberInfoModel) {
     return Padding(
-      padding: const .only(left: 16, top: 10, right: 16, bottom: 3),
+      padding: const EdgeInsets.only(left: 16, top: 10, right: 16, bottom: 3),
       child: Row(
         spacing: 10,
         children: [

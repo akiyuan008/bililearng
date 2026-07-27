@@ -151,13 +151,13 @@ class ShutdownTimerService {
       builder: (context, setState) {
         final ThemeData theme = Theme.of(context);
         return Padding(
-          padding: const .all(12),
+          padding: const EdgeInsets.all(12),
           child: Material(
             clipBehavior: .hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const .all(.circular(12)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
             child: ListView(
-              padding: const .symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               children: [
                 const Center(child: Text('定时关闭', style: titleStyle)),
                 const SizedBox(height: 10),
@@ -237,7 +237,7 @@ class ShutdownTimerService {
                 ],
                 const SizedBox(height: 5),
                 Padding(
-                  padding: const .only(left: 18),
+                  padding: const EdgeInsets.only(left: 18),
                   child: Builder(
                     builder: (context) {
                       return Row(

@@ -383,7 +383,7 @@ class _MainAppState extends PopScopeState<MainApp>
                         child: Obx(
                           () => NavigationDrawer(
                             backgroundColor: Colors.transparent,
-                            tilePadding: const .symmetric(
+                            tilePadding: const EdgeInsets.symmetric(
                               vertical: 5,
                               horizontal: 12,
                             ),
@@ -430,7 +430,7 @@ class _MainAppState extends PopScopeState<MainApp>
                 )
         : Container(
             width: 80,
-            padding: const .only(top: 10),
+            padding: const EdgeInsets.only(top: 10),
             child: userAndSearchVertical(theme),
           );
   }
@@ -509,7 +509,7 @@ class _MainAppState extends PopScopeState<MainApp>
                 label: _mainController.dynamicBadgeMode == .number
                     ? Text(dynCount.toString())
                     : null,
-                padding: const .symmetric(horizontal: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: icon,
               );
             },

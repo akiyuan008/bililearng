@@ -374,7 +374,7 @@ class HeaderControlState extends State<HeaderControl>
           child: Material(
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 14),
               children: [
@@ -801,7 +801,7 @@ class HeaderControlState extends State<HeaderControl>
           content: Material(
             type: MaterialType.transparency,
             child: ListTileTheme(
-              contentPadding: const .symmetric(horizontal: 24),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
               child: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -918,7 +918,7 @@ class HeaderControlState extends State<HeaderControl>
           child: Material(
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
             child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
@@ -1012,7 +1012,7 @@ class HeaderControlState extends State<HeaderControl>
           child: Material(
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
             child: CustomScrollView(
               slivers: [
                 const SliverToBoxAdapter(
@@ -1101,7 +1101,7 @@ class HeaderControlState extends State<HeaderControl>
           child: Material(
             clipBehavior: Clip.hardEdge,
             color: colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
             child: Column(
               children: [
                 const SizedBox(
@@ -1129,7 +1129,7 @@ class HeaderControlState extends State<HeaderControl>
                                 ..updatePlayer();
                               SmartDialog.showToast("解码已变为：${format.name}");
                             },
-                            contentPadding: const .symmetric(horizontal: 20),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                             title: Text(format.description),
                             subtitle: Text(item, style: subTitleStyle),
                             trailing: isCurr
@@ -1158,8 +1158,8 @@ class HeaderControlState extends State<HeaderControl>
         final secondary = ColorScheme.of(context).secondary;
         return SimpleDialog(
           clipBehavior: .hardEdge,
-          contentPadding: const .only(bottom: 12),
-          titlePadding: const .fromLTRB(20, 20, 20, 12),
+          contentPadding: const EdgeInsets.only(bottom: 12),
+          titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
           title: Row(
             children: [
               const Expanded(child: Text('保存字幕')),
@@ -1182,7 +1182,7 @@ class HeaderControlState extends State<HeaderControl>
                       )
                       .toList(),
                   child: Padding(
-                    padding: const .symmetric(horizontal: 2, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
                     child: Text.rich(
                       style: .new(fontSize: 14, color: secondary),
                       TextSpan(
@@ -1287,7 +1287,7 @@ class HeaderControlState extends State<HeaderControl>
   /// 字幕设置
   void showSetSubtitle() {
     showBottomSheet(
-      padding: () => isFullScreen ? const .only(bottom: 70) : .zero,
+      padding: () => isFullScreen ? const EdgeInsets.only(bottom: 70) : .zero,
       (context, setState) {
         final theme = Theme.of(context);
 
@@ -1354,7 +1354,7 @@ class HeaderControlState extends State<HeaderControl>
           child: Material(
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: ListView(
@@ -1572,7 +1572,7 @@ class HeaderControlState extends State<HeaderControl>
         margin: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
         ),
         child: Column(
           children: [

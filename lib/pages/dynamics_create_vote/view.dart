@@ -364,7 +364,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
                       ? theme.colorScheme.secondary
                       : theme.colorScheme.outline,
                 ),
-                borderRadius: const BorderRadius.all(Radius.circular(6)),
+                borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
               ),
               backgroundColor: isEnable
                   ? theme.colorScheme.secondaryContainer

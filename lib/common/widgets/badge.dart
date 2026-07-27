@@ -82,10 +82,10 @@ class PBadge extends StatelessWidget {
         color = theme.onSurfaceVariant;
     }
 
-    late EdgeInsets paddingStyle = const .symmetric(vertical: 2, horizontal: 3);
+    late EdgeInsets paddingStyle = const EdgeInsets.symmetric(vertical: 2, horizontal: 3);
     final BorderRadius br = size == .small
-        ? const .all(.circular(3))
-        : const .all(.circular(4));
+        ? const BorderRadius.all(BorderRadius.circular(3))
+        : const BorderRadius.all(BorderRadius.circular(4));
 
     Widget content = Container(
       padding: padding ?? paddingStyle,

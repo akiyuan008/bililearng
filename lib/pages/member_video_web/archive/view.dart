@@ -56,14 +56,14 @@ class _MemberVideoWebState
         backgroundColor: colorScheme.surface,
         child: SelfSizedHorizontalList(
           itemCount: tags.length,
-          padding: const .fromLTRB(10, 0, 10, 8),
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
           itemBuilder: (context, index) {
             final item = tags[index];
             final isCurr = controller.specialType != null
                 ? item.specialType == controller.specialType
                 : item.tid == controller.tid;
             return SearchText(
-              padding: const .symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               text: '${item.name!} ${item.count}',
               bgColor: isCurr ? colorScheme.secondaryContainer : null,
               textColor: isCurr ? colorScheme.onSecondaryContainer : null,

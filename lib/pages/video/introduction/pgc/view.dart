@@ -98,7 +98,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
       }
     }
     return SliverPadding(
-      padding: const .fromLTRB(
+      padding: const EdgeInsets.fromLTRB(
         Style.safeSpace,
         Style.safeSpace,
         Style.safeSpace,

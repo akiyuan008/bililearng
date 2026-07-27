@@ -101,9 +101,9 @@ class _SeasonPanelState extends State<SeasonPanel> {
       ),
       child: Material(
         color: theme.colorScheme.onInverseSurface,
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
         child: InkWell(
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
           onTap: widget.canTap
               ? () => widget.showEpisodes(
                   _videoDetailController.seasonIndex.value,

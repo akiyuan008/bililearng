@@ -12,14 +12,14 @@ Widget buildVoteCard(
   return InkWell(
     onTap: () => showVoteDialog(context, voteCard.voteId.toInt()),
     child: Padding(
-      padding: const .symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         spacing: 10,
         children: [
           Container(
             decoration: BoxDecoration(
               color: colorScheme.onInverseSurface,
-              borderRadius: const .all(.circular(8)),
+              borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
             ),
             width: 60,
             height: 42,

@@ -58,7 +58,7 @@ const BoxDecoration _kDefaultRoundedBorderDecoration = BoxDecoration(
     darkColor: CupertinoColors.black,
   ),
   border: _kDefaultRoundedBorder,
-  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+  borderRadius: BorderRadius.all(BorderRadius.circular(5.0)),
 );
 
 const Color _kDisabledBackground = CupertinoDynamicColor.withBrightness(

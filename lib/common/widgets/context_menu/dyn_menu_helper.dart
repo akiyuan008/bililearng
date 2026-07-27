@@ -52,7 +52,7 @@ void _showEmoteDialog(ModuleDynamicModel? moduleDynamic) {
     context: Get.context!,
     builder: (context) => Dialog(
       child: Padding(
-        padding: const .symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: SingleChildScrollView(
           child: SelectionText.rich(
             TextSpan(
@@ -92,7 +92,7 @@ void _showTextDialog(String text) {
     context: Get.context!,
     builder: (context) => Dialog(
       child: Padding(
-        padding: const .symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: SingleChildScrollView(
           child: SelectionText(
             text,

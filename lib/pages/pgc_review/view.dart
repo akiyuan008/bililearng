@@ -66,7 +66,7 @@ class _PgcReviewPageState extends State<PgcReviewPage>
               ),
               indicator: BoxDecoration(
                 color: theme.colorScheme.secondaryContainer,
-                borderRadius: const BorderRadius.all(Radius.circular(20)),
+                borderRadius: const BorderRadius.all(BorderRadius.circular(20)),
               ),
               indicatorSize: TabBarIndicatorSize.tab,
               labelColor: theme.colorScheme.onSecondaryContainer,

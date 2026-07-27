@@ -139,7 +139,7 @@ class _SetSwitchItemState extends State<SetSwitchItem> {
             ),
           ),
           Padding(
-            padding: const .only(left: 4, right: 24),
+            padding: const EdgeInsets.only(left: 4, right: 24),
             child: switchBtn,
           ),
         ],

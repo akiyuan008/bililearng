@@ -287,7 +287,7 @@ Widget? addWidget(
                           ),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(
@@ -468,7 +468,7 @@ Widget? addWidget(
                   ),
                   style: FilledButton.styleFrom(
                     shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(6)),
+                      borderRadius: BorderRadius.all(BorderRadius.circular(6)),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     visualDensity: const VisualDensity(
@@ -541,7 +541,7 @@ Widget? addWidget(
                     ),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(
@@ -624,7 +624,7 @@ Widget? addWidget(
                   teamItem(
                     content.matchInfo!.leftTeam!,
                     Alignment.centerRight,
-                    const .only(right: 16),
+                    const EdgeInsets.only(right: 16),
                   ),
                 Column(
                   children: [
@@ -654,7 +654,7 @@ Widget? addWidget(
                   teamItem(
                     content.matchInfo!.rightTeam!,
                     Alignment.centerLeft,
-                    const .only(left: 16),
+                    const EdgeInsets.only(left: 16),
                   ),
                 if (content.button case final button?)
                   FilledButton.tonal(
@@ -662,7 +662,7 @@ Widget? addWidget(
                         PiliScheme.routePushFromUrl(button.jumpUrl!),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(
@@ -692,7 +692,7 @@ Widget? addWidget(
     }
   } catch (e) {
     return Padding(
-      padding: const .all(12),
+      padding: const EdgeInsets.all(12),
       child: SelectionText(
         '''
 additional panel error

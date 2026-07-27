@@ -36,7 +36,7 @@ class FollowItem extends StatelessWidget {
         style: FilledButton.styleFrom(
           visualDensity: .compact,
           tapTargetSize: .shrinkWrap,
-          padding: const .symmetric(horizontal: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 15),
           foregroundColor: isFollow ? colorScheme.outline : null,
           backgroundColor: isFollow ? colorScheme.onInverseSurface : null,
         ),
@@ -65,7 +65,7 @@ class FollowItem extends StatelessWidget {
           }
         },
         child: Padding(
-          padding: const .symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
               PendantAvatar(

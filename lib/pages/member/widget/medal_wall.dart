@@ -20,7 +20,7 @@ class MedalWall extends StatelessWidget {
     return AlertDialog(
       clipBehavior: .hardEdge,
       title: const Text('粉丝勋章墙'),
-      contentPadding: const .symmetric(vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
       constraints: const BoxConstraints.tightFor(width: 380),
       content: CustomScrollView(
         shrinkWrap: true,
@@ -37,14 +37,14 @@ class MedalWall extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const .only(top: 5),
+              padding: const EdgeInsets.only(top: 5),
               child: Center(child: Text(response.name!)),
             ),
           ),
           SliverToBoxAdapter(
             child: Center(
               child: Padding(
-                padding: const .only(top: 5, bottom: 8),
+                padding: const EdgeInsets.only(top: 5, bottom: 8),
                 child: Text.rich(
                   style: TextStyle(fontSize: 12, color: colorScheme.outline),
                   TextSpan(
@@ -105,7 +105,7 @@ class MedalWall extends StatelessWidget {
                     ),
                     if (isLiving)
                       Padding(
-                        padding: const .only(left: 4),
+                        padding: const EdgeInsets.only(left: 4),
                         child: Image.asset(
                           Assets.livingChart,
                           height: 16,
@@ -114,16 +114,16 @@ class MedalWall extends StatelessWidget {
                         ),
                       ),
                     Padding(
-                      padding: const .only(left: 8),
+                      padding: const EdgeInsets.only(left: 8),
                       child: MedalWidget.fromMedalInfo(medal: uinfoMedal),
                     ),
                   ],
                 ),
                 trailing: item.medalInfo!.wearingStatus == 1
                     ? Container(
-                        padding: const .symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          borderRadius: const .all(.circular(3)),
+                          borderRadius: const BorderRadius.all(BorderRadius.circular(3)),
                           color: colorScheme.btnColor,
                         ),
                         child: const Text(

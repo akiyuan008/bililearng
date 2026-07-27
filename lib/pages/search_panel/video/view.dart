@@ -50,7 +50,7 @@ class _SearchVideoPanelState
     return SliverFloatingHeaderWidget(
       backgroundColor: theme.colorScheme.surface,
       child: Padding(
-        padding: const .fromLTRB(12, 0, 12, 4),
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
         child: Row(
           children: [
             Expanded(

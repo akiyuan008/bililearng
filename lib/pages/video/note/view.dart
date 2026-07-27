@@ -153,7 +153,7 @@ class _NoteListPageState extends State<NoteListPage>
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 padding: EdgeInsets.zero,
                 shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(6)),
+                  borderRadius: BorderRadius.all(BorderRadius.circular(6)),
                 ),
               ),
               onPressed: () {

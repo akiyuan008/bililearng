@@ -159,7 +159,7 @@ class _WhisperDetailPageState
         response != null && response.isNotEmpty
             ? ChatListView.separated(
                 itemCount: response.length,
-                padding: const .all(kChatListPadding),
+                padding: const EdgeInsets.all(kChatListPadding),
                 physics: platformAlwaysClampingPhysics,
                 controller: _whisperDetailController.scrollController,
                 itemBuilder: (context, int index) {
@@ -319,7 +319,7 @@ class _WhisperDetailPageState
                     fillColor: theme.colorScheme.surface,
                     border: const OutlineInputBorder(
                       borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.all(Radius.circular(6)),
+                      borderRadius: BorderRadius.all(BorderRadius.circular(6)),
                       gapPadding: 0,
                     ),
                     contentPadding: const EdgeInsets.all(10),

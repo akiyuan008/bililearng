@@ -61,7 +61,7 @@ class _FavPgcPageState extends State<FavPgcPage>
                 ),
                 indicator: BoxDecoration(
                   color: theme.colorScheme.secondaryContainer,
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                  borderRadius: const BorderRadius.all(BorderRadius.circular(20)),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 labelStyle:

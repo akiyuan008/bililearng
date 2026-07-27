@@ -85,7 +85,7 @@ class _LivePageState extends State<LivePage>
           if (list.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const .only(bottom: 8.0),
+                padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
                   children: [
                     Expanded(
@@ -96,7 +96,7 @@ class _LivePageState extends State<LivePage>
                           final areaIndex = controller.areaIndex.value;
                           return ListView.separated(
                             scrollDirection: .horizontal,
-                            padding: const .only(right: 8),
+                            padding: const EdgeInsets.only(right: 8),
                             physics: const AlwaysScrollableScrollPhysics(),
                             separatorBuilder: (_, _) =>
                                 const SizedBox(width: 12),
@@ -107,7 +107,7 @@ class _LivePageState extends State<LivePage>
                               return SearchText(
                                 fontSize: 14,
                                 height: 1,
-                                padding: const .symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 5,
                                 ),
@@ -202,7 +202,7 @@ class _LivePageState extends State<LivePage>
                     final tagIndex = controller.tagIndex.value;
                     return ListView.separated(
                       scrollDirection: .horizontal,
-                      padding: const .only(bottom: 8),
+                      padding: const EdgeInsets.only(bottom: 8),
                       separatorBuilder: (_, _) => const SizedBox(width: 12),
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
@@ -211,7 +211,7 @@ class _LivePageState extends State<LivePage>
                         return SearchText(
                           height: 1,
                           fontSize: 13,
-                          padding: const .symmetric(horizontal: 8, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                           text: item.name!,
                           bgColor: isCurr
                               ? theme.colorScheme.secondaryContainer
@@ -264,7 +264,7 @@ class _LivePageState extends State<LivePage>
     return [
       SliverToBoxAdapter(
         child: Padding(
-          padding: const .only(bottom: 8.0),
+          padding: const EdgeInsets.only(bottom: 8.0),
           child: Row(
             mainAxisAlignment: .spaceBetween,
             children: [
@@ -343,7 +343,7 @@ class _LivePageState extends State<LivePage>
                 }
                 final item = followList[index];
                 return Padding(
-                  padding: const .only(right: 5),
+                  padding: const EdgeInsets.only(right: 5),
                   child: SizedBox(
                     width: 65,
                     child: GestureDetector(
@@ -360,7 +360,7 @@ class _LivePageState extends State<LivePage>
                         mainAxisSize: .min,
                         children: [
                           Container(
-                            padding: const .all(2),
+                            padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               border: Border.all(
                                 width: 1.5,

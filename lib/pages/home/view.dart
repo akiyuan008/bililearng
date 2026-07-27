@@ -139,7 +139,7 @@ class _HomePageState extends CommonPageState<HomePage>
   }
 
   Widget searchBar(ThemeData theme) {
-    const borderRadius = BorderRadius.all(Radius.circular(25));
+    const borderRadius = BorderRadius.all(BorderRadius.circular(25));
     return Expanded(
       child: SizedBox(
         height: 44,
@@ -223,7 +223,7 @@ Widget userAvatar({
                   () => MineController.anonymity.value
                       ? IgnorePointer(
                           child: Container(
-                            padding: const .all(2),
+                            padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               shape: .circle,
                               color: theme.colorScheme.secondaryContainer,

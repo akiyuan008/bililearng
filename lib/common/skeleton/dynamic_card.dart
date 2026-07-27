@@ -11,7 +11,7 @@ class DynamicCardSkeleton extends StatelessWidget {
     final color = theme.colorScheme.onInverseSurface;
     final buttonStyle = TextButton.styleFrom(
       tapTargetSize: .padded,
-      padding: const .symmetric(horizontal: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 15),
       foregroundColor: theme.colorScheme.outline.withValues(
         alpha: 0.2,
       ),
@@ -37,7 +37,7 @@ class DynamicCardSkeleton extends StatelessWidget {
                   height: 40,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    borderRadius: const BorderRadius.all(BorderRadius.circular(20)),
                   ),
                 ),
                 const SizedBox(width: 10),

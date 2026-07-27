@@ -216,7 +216,7 @@ class _Item extends StatelessWidget {
     return InkWell(
       onTap: () => Get.toNamed('/member?mid=${item.uid}'),
       child: Padding(
-        padding: const .only(left: 10, top: 9, bottom: 8, right: 16),
+        padding: const EdgeInsets.only(left: 10, top: 9, bottom: 8, right: 16),
         child: Row(
           spacing: 10,
           children: [

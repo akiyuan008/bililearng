@@ -162,8 +162,8 @@ class _VotePanelState extends State<VotePanel> {
                       return SimpleDialog(
                         clipBehavior: .hardEdge,
                         title: const Text('关注的人的投票'),
-                        contentPadding: const .only(bottom: 12),
-                        titlePadding: const .fromLTRB(20, 20, 20, 10),
+                        contentPadding: const EdgeInsets.only(bottom: 12),
+                        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                         children: list
                             .map(
                               (e) => ListTile(
@@ -318,7 +318,7 @@ class _VotePanelState extends State<VotePanel> {
     return Card(
       clipBehavior: Clip.hardEdge,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
       ),
       child: Builder(
         builder: (context) {
@@ -552,7 +552,7 @@ Future<void> showVoteDialog(
         builder: (context) => Dialog(
           constraints: const BoxConstraints(minWidth: 280, maxWidth: 625),
           child: Padding(
-            padding: const .all(24),
+            padding: const EdgeInsets.all(24),
             child: VotePanel(
               voteInfo: response,
               onVote: (votes, anonymous) => DynamicsHttp.doVote(

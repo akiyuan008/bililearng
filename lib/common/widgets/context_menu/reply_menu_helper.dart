@@ -11,7 +11,7 @@ void showReplyCopyDialog(
     builder: (context) => Dialog(
       constraints: const BoxConstraints.tightFor(width: 380),
       child: Padding(
-        padding: const .symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: SingleChildScrollView(
           child: SelectionText.rich(
             showEmote

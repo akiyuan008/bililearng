@@ -340,7 +340,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                           height: 3,
                           decoration: BoxDecoration(
                             color: theme.colorScheme.outline,
-                            borderRadius: const .all(.circular(1.5)),
+                            borderRadius: const BorderRadius.all(BorderRadius.circular(1.5)),
                           ),
                         ),
                       ),
@@ -462,7 +462,7 @@ class _ExpansionTile extends ExpansionTile {
     // ignore: unused_element_parameter
     super.controlAffinity = .leading,
     // ignore: unused_element_parameter
-    super.childrenPadding = const .only(left: 20),
+    super.childrenPadding = const EdgeInsets.only(left: 20),
     super.initiallyExpanded,
     super.iconColor,
     super.collapsedIconColor,

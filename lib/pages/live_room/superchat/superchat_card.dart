@@ -247,7 +247,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
             borderRadius: const .vertical(bottom: .circular(8)),
             color: bottomColor,
           ),
-          padding: const .all(8),
+          padding: const EdgeInsets.all(8),
           child: TextSelectionTheme(
             data: TextSelectionThemeData(
               selectionColor: Color.lerp(bottomColor, Colors.black, .26),

@@ -118,7 +118,7 @@ class ReplyItemGrpc extends StatelessWidget {
     );
 
     Widget child = Padding(
-      padding: const .fromLTRB(12, 14, 8, 5),
+      padding: const EdgeInsets.fromLTRB(12, 14, 8, 5),
       child: _buildContent(context, colorScheme),
     );
     if (needDivider) {
@@ -212,7 +212,7 @@ class ReplyItemGrpc extends StatelessWidget {
                         nameColor: DmUtils.decimalToColor(
                           member.fansMedalColorName.toInt(),
                         ),
-                        padding: const .symmetric(horizontal: 6, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                       ),
                   ],
                 ),
@@ -282,7 +282,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 ),
               ),
             Padding(
-              padding: const .only(right: 80),
+              padding: const EdgeInsets.only(right: 80),
               child: header,
             ),
           ],
@@ -571,7 +571,7 @@ class ReplyItemGrpc extends StatelessWidget {
       padding: const EdgeInsets.only(left: 42, right: 4),
       child: Material(
         color: colorScheme.onInverseSurface,
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
         clipBehavior: Clip.hardEdge,
         animationDuration: Duration.zero,
         child: Column(
@@ -1010,7 +1010,7 @@ class ReplyItemGrpc extends StatelessWidget {
                   height: 3,
                   decoration: BoxDecoration(
                     color: colorScheme.outline,
-                    borderRadius: const BorderRadius.all(Radius.circular(3)),
+                    borderRadius: const BorderRadius.all(BorderRadius.circular(3)),
                   ),
                 ),
               ),

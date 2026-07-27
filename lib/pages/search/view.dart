@@ -141,10 +141,10 @@ class _SearchPageState extends State<SearchPage> {
               children: list
                   .map(
                     (item) => InkWell(
-                      borderRadius: const .all(.circular(4)),
+                      borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
                       onTap: () => _searchController.onClickKeyword(item.term!),
                       child: Padding(
-                        padding: const .only(left: 20, top: 9, bottom: 9),
+                        padding: const EdgeInsets.only(left: 20, top: 9, bottom: 9),
                         child: Text.rich(
                           TextSpan(
                             children: Em.regTitle(item.textRich)
@@ -203,7 +203,7 @@ class _SearchPageState extends State<SearchPage> {
       sliver: SliverMainAxisGroup(
         slivers: [
           SliverPadding(
-            padding: const .fromLTRB(6, 0, 6, 6),
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
             sliver: SliverToBoxAdapter(
               child: Row(
                 mainAxisAlignment: .spaceBetween,
@@ -306,7 +306,7 @@ class _SearchPageState extends State<SearchPage> {
           sliver: SliverMainAxisGroup(
             slivers: [
               SliverPadding(
-                padding: const .fromLTRB(6, 0, 6, 6),
+                padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
                 sliver: SliverToBoxAdapter(
                   child: Row(
                     children: [
@@ -359,7 +359,7 @@ class _SearchPageState extends State<SearchPage> {
                     onLongPress: _searchController.onLongSelect,
                     fontSize: 14,
                     height: 1,
-                    padding: const .fromLTRB(11, 8, 11, 0),
+                    padding: const EdgeInsets.fromLTRB(11, 8, 11, 0),
                   ),
                 ),
               ),

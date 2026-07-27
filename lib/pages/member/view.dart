@@ -208,7 +208,7 @@ class _MemberPageState extends State<MemberPage> {
                       height: 3,
                       decoration: BoxDecoration(
                         color: scheme.outline,
-                        borderRadius: const .all(.circular(1.5)),
+                        borderRadius: const BorderRadius.all(BorderRadius.circular(1.5)),
                       ),
                     ),
                   ),
@@ -241,7 +241,7 @@ class _MemberPageState extends State<MemberPage> {
                         foregroundColor: e.isFollow ? scheme.outline : null,
                         tapTargetSize: .shrinkWrap,
                         minimumSize: const Size(68, 40),
-                        padding: const .symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         visualDensity: const .new(horizontal: -2, vertical: -3),
                         shape: const RoundedRectangleBorder(
                           borderRadius: .all(.circular(6)),
@@ -278,7 +278,7 @@ class _MemberPageState extends State<MemberPage> {
                         style: const TextStyle(fontSize: 14),
                       ),
                       subtitle: Padding(
-                        padding: const .only(top: 2.0),
+                        padding: const EdgeInsets.only(top: 2.0),
                         child: Text.rich(
                           style: TextStyle(fontSize: 12, color: scheme.outline),
                           TextSpan(

@@ -289,7 +289,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
           const SliverToBoxAdapter(child: SizedBox(width: 16)),
           if (imageList.isNotEmpty)
             SliverPadding(
-              padding: const .only(right: 10),
+              padding: const EdgeInsets.only(right: 10),
               sliver: SliverList.separated(
                 itemCount: imageList.length,
                 itemBuilder: (context, index) => buildImage(index, 100),
@@ -611,7 +611,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
               child: Container(
                 decoration: BoxDecoration(
                   color: theme.colorScheme.onInverseSurface,
-                  borderRadius: const BorderRadius.all(Radius.circular(6)),
+                  borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                 ),
                 alignment: Alignment.center,
                 child: icon,
@@ -840,7 +840,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
               behavior: HitTestBehavior.opaque,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                  borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
                   color: theme.colorScheme.onInverseSurface,
                 ),
                 margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),

@@ -91,7 +91,7 @@ class _SelectTopicPanelState
               height: 3,
               decoration: BoxDecoration(
                 color: theme.colorScheme.outline,
-                borderRadius: const BorderRadius.all(Radius.circular(3)),
+                borderRadius: const BorderRadius.all(BorderRadius.circular(3)),
               ),
             ),
           ),
@@ -107,7 +107,7 @@ class _SelectTopicPanelState
               border: const OutlineInputBorder(
                 gapPadding: 0,
                 borderSide: BorderSide.none,
-                borderRadius: BorderRadius.all(Radius.circular(25)),
+                borderRadius: BorderRadius.all(BorderRadius.circular(25)),
               ),
               isDense: true,
               filled: true,

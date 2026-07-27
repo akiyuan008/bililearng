@@ -1725,7 +1725,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               type: MaterialType.transparency,
               child: InkWell(
                 onTap: () => videoDetailController.showMediaListPanel(context),
-                borderRadius: const BorderRadius.all(Radius.circular(14)),
+                borderRadius: const BorderRadius.all(BorderRadius.circular(14)),
                 child: Container(
                   height: 54,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1733,7 +1733,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     color: themeData.colorScheme.secondaryContainer.withValues(
                       alpha: 0.95,
                     ),
-                    borderRadius: const BorderRadius.all(Radius.circular(14)),
+                    borderRadius: const BorderRadius.all(BorderRadius.circular(14)),
                   ),
                   child: Row(
                     children: [

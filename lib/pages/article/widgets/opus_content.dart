@@ -195,7 +195,7 @@ class OpusContent extends StatelessWidget {
               );
               if (isQuote) {
                 widget = Container(
-                  padding: const .only(left: 8, top: 4, right: 4, bottom: 4),
+                  padding: const EdgeInsets.only(left: 8, top: 4, right: 4, bottom: 4),
                   decoration: BoxDecoration(
                     border: Border(
                       left: BorderSide(
@@ -203,7 +203,7 @@ class OpusContent extends StatelessWidget {
                         width: 4,
                       ),
                     ),
-                    borderRadius: const BorderRadius.all(Radius.circular(6)),
+                    borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                     color: colorScheme.onInverseSurface,
                   ),
                   child: widget,
@@ -330,7 +330,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: ugc.cover,
-                        borderRadius: const .all(.circular(6)),
+                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -365,7 +365,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: common.cover,
-                        borderRadius: const .all(.circular(6)),
+                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -404,7 +404,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: live.cover,
-                        borderRadius: const .all(.circular(6)),
+                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -443,7 +443,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: opus.cover,
-                        borderRadius: const .all(.circular(6)),
+                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -469,7 +469,7 @@ class OpusContent extends StatelessWidget {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          borderRadius: const .all(.circular(6)),
+                          borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                           color: colorScheme.secondaryContainer,
                         ),
                         width: 70,
@@ -506,7 +506,7 @@ class OpusContent extends StatelessWidget {
                         width: 104,
                         height: 65,
                         src: music.cover,
-                        borderRadius: const .all(.circular(6)),
+                        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                       ),
                       Expanded(
                         child: Column(
@@ -545,7 +545,7 @@ class OpusContent extends StatelessWidget {
                               width: 104,
                               height: 65,
                               src: e.cover,
-                              borderRadius: const .all(.circular(6)),
+                              borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                             ),
                             Expanded(
                               child: Column(
@@ -604,7 +604,7 @@ class OpusContent extends StatelessWidget {
                                 context: context,
                                 builder: (context) => SimpleDialog(
                                   clipBehavior: .hardEdge,
-                                  contentPadding: const .symmetric(
+                                  contentPadding: const EdgeInsets.symmetric(
                                     vertical: 12,
                                   ),
                                   children: [
@@ -643,9 +643,9 @@ class OpusContent extends StatelessWidget {
                             }
                           } catch (_) {}
                         },
-                  borderRadius: const .all(.circular(8)),
+                  borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
                   child: Padding(
-                    padding: const .all(8),
+                    padding: const EdgeInsets.all(8),
                     child: child,
                   ),
                 ),
@@ -668,9 +668,9 @@ class OpusContent extends StatelessWidget {
                   )
                   .render(renderer);
               return Container(
-                padding: const .all(12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  borderRadius: const .all(.circular(8)),
+                  borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
                   color: colorScheme.onInverseSurface,
                 ),
                 width: .infinity,
@@ -818,7 +818,7 @@ Widget moduleBlockedItem(
             width: maxWidth,
             height: maxWidth,
             decoration: bgImg(maxWidth),
-            padding: const .all(12),
+            padding: const EdgeInsets.all(12),
             child: Column(
               mainAxisAlignment: .center,
               children: [
@@ -850,7 +850,7 @@ Widget moduleBlockedItem(
     builder: (context, constraints) {
       return Container(
         decoration: bgImg(constraints.maxWidth),
-        padding: const .all(12),
+        padding: const EdgeInsets.all(12),
         child: Row(
           spacing: 8,
           children: [
@@ -884,7 +884,7 @@ Widget moduleBlockedItem(
                 shape: const RoundedRectangleBorder(
                   borderRadius: .all(.circular(6)),
                 ),
-                padding: const .symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
               ),
           ],
         ),
@@ -897,10 +897,10 @@ Widget opusCollection(ThemeData theme, ModuleCollection item) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 10),
     child: Material(
-      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
       color: theme.colorScheme.onInverseSurface,
       child: InkWell(
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
         onTap: () => Get.toNamed(
           '/articleList',
           parameters: {'id': '${item.id}'},

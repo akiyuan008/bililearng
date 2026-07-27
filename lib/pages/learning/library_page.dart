@@ -11,6 +11,20 @@ class LearningLibraryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = <_LibraryEntry>[
       _LibraryEntry(
+        title: '番茄钟',
+        subtitle: '专注学习倒计时工具',
+        icon: Icons.timer_outlined,
+        color: Colors.red,
+        route: '/pomodoro',
+      ),
+      _LibraryEntry(
+        title: '学习统计',
+        subtitle: '学习时长与记录',
+        icon: Icons.bar_chart,
+        color: Colors.green,
+        route: '/stats',
+      ),
+      _LibraryEntry(
         title: '稍后再看',
         subtitle: '待学习的视频',
         icon: Icons.watch_later_outlined,

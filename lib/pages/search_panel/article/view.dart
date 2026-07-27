@@ -48,7 +48,7 @@ class _SearchArticlePanelState
     return SliverFloatingHeaderWidget(
       backgroundColor: theme.colorScheme.surface,
       child: Padding(
-        padding: const .fromLTRB(25, 0, 12, 4),
+        padding: const EdgeInsets.fromLTRB(25, 0, 12, 4),
         child: Row(
           children: [
             Obx(

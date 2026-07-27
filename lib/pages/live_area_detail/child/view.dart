@@ -92,14 +92,14 @@ class _LiveAreaChildPageState extends State<LiveAreaChildPage>
               child: Obx(() {
                 final tagIndex = _controller.tagIndex.value;
                 return SelfSizedHorizontalList(
-                  padding: const .only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: 12),
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     final item = _controller.newTags![index];
                     final isCurr = index == tagIndex;
                     return SearchText(
                       fontSize: 14,
-                      padding: const .symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       text: item.name!,
                       bgColor: isCurr
                           ? theme.colorScheme.secondaryContainer

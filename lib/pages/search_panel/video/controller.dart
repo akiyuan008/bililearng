@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/common/search/video_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
+import 'package:PiliPlus/pages/learning/learning_filter.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -38,7 +39,18 @@ class SearchVideoController
 
   @override
   List<SearchVideoItemModel>? getDataList(SearchVideoData response) {
-    return response.list;
+    // [PiliPlus Learning] 高中专属搜索结果过滤
+    // 过滤竖屏短视频、黑名单内容,仅保留高中学习相关视频
+    final list = response.list;
+    if (list == null || list.isEmpty) return list;
+    return list.where((item) {
+      return !LearningFilter.shouldFilterSearchItem(
+        title: item.title ?? '',
+        desc: item.desc ?? '',
+        tag: item.tag,
+        duration: item.duration,
+      );
+    }).toList();
   }
 
   @override

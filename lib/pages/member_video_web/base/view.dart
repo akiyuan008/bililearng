@@ -119,7 +119,7 @@ abstract class BaseVideoWebState<
     return SliverPinnedHeader(
       backgroundColor: colorScheme.surface,
       child: Padding(
-        padding: const .fromLTRB(14, 0, 8, 4),
+        padding: const EdgeInsets.fromLTRB(14, 0, 8, 4),
         child: Stack(
           clipBehavior: .none,
           alignment: .centerLeft,
@@ -170,8 +170,8 @@ abstract class BaseVideoWebState<
     final pageIndicator = SearchText(
       height: 1,
       text: '$page / $totalPage',
-      borderRadius: const .all(.circular(4)),
-      padding: const .symmetric(horizontal: 10, vertical: 5),
+      borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       onTap: (_) => showJumpDialog(page),
     );
 

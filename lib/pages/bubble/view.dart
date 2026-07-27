@@ -93,7 +93,7 @@ class _BubblePageState extends State<BubblePage>
                       context: context,
                       builder: (context) => SimpleDialog(
                         clipBehavior: .hardEdge,
-                        contentPadding: const .symmetric(vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         children: sortInfo.sortItems!.map(
                           (e) {
                             final isSelected = item.sortType == e.sortType;

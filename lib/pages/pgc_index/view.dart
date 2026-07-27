@@ -122,7 +122,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
             ? theme.colorScheme.onSecondaryContainer
             : theme.colorScheme.onSurfaceVariant,
         text: item.name!,
-        padding: const .symmetric(horizontal: 6, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         onTap: (_) => _ctr
           ..indexParams['order'] = item.field
           ..onReload(),
@@ -141,7 +141,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
             ? theme.colorScheme.onSecondaryContainer
             : theme.colorScheme.onSurfaceVariant,
         text: item.name!,
-        padding: const .symmetric(horizontal: 6, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         onTap: (_) => _ctr
           ..indexParams[key] = item.keyword
           ..onReload(),
@@ -177,8 +177,8 @@ class _PgcIndexPageState extends State<PgcIndexPage>
               final indexParams = _ctr.indexParams.value;
               return SelfSizedHorizontalList(
                 padding: isFirst
-                    ? const .symmetric(horizontal: 12)
-                    : const .fromLTRB(12, 10, 12, 0),
+                    ? const EdgeInsets.symmetric(horizontal: 12)
+                    : const EdgeInsets.fromLTRB(12, 10, 12, 0),
                 separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, childIndex) => _buildSortWidget(
                   theme,

@@ -151,7 +151,7 @@ class _AiDetailState extends State<AiConclusionPanel>
                   height: 3,
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary,
-                    borderRadius: const BorderRadius.all(Radius.circular(3)),
+                    borderRadius: const BorderRadius.all(BorderRadius.circular(3)),
                   ),
                 ),
               ),

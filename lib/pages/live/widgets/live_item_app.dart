@@ -101,7 +101,7 @@ class LiveCardVApp extends StatelessWidget {
                   context: context,
                   builder: (context) {
                     return SimpleDialog(
-                      contentPadding: const .fromLTRB(24, 16, 24, 19),
+                      contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 19),
                       children: [
                         for (var i in feedback) ...[
                           const SizedBox(height: 5),

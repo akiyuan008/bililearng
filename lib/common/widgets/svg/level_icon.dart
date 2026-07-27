@@ -143,7 +143,7 @@ extension type LevelCanvas(Canvas _) implements Canvas {
   void _draw1(Paint paint) {
     drawRRect(const .fromLTRBXY(673, _botY, 833, _botYB, 20, 20), paint);
     drawRRect(.fromLTRBAndCorners(673, _topY, 787, _topYB, topLeft: _r, bottomLeft: _r, topRight: _r), paint);
-    drawRect(const .fromLTRB(719, _topYB, 787, _botY), paint);
+    drawRect(const EdgeInsets.fromLTRB(719, _topYB, 787, _botY), paint);
   }
 
   void drawLEDigit(int digit, Paint paint) {
@@ -254,11 +254,11 @@ extension type LevelCanvas(Canvas _) implements Canvas {
         Path()
           ..moveTo(vLeft, vtb)
           ..lineTo(vLeft, 292)
-          ..arcToPoint(const Offset(300, 313), radius: const .circular(50), clockwise: false)
+          ..arcToPoint(const Offset(300, 313), radius: const Radius.circular(50), clockwise: false)
           ..lineTo(395, 408)
-          ..arcToPoint(const Offset(444, 408), radius: const .circular(50), clockwise: false)
+          ..arcToPoint(const Offset(444, 408), radius: const Radius.circular(50), clockwise: false)
           ..lineTo(539, 313)
-          ..arcToPoint(const Offset(543, 292), radius: const .circular(50), clockwise: false)
+          ..arcToPoint(const Offset(543, 292), radius: const Radius.circular(50), clockwise: false)
           ..lineTo(543, vtb)
           ..lineTo(476, vtb)
           ..lineTo(419.5, 340)

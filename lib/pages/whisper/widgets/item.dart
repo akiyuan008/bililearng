@@ -85,7 +85,7 @@ class WhisperSessionItem extends StatelessWidget {
         context: context,
         builder: (_) => SimpleDialog(
           clipBehavior: .hardEdge,
-          contentPadding: const .symmetric(vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
           children: [
             DialogOption(
               onPressed: () {

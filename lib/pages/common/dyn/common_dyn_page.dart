@@ -99,7 +99,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     return SliverPinnedHeader(
       backgroundColor: theme.colorScheme.surface,
       child: Padding(
-        padding: const .fromLTRB(12, 2.5, 6, 2.5),
+        padding: const EdgeInsets.fromLTRB(12, 2.5, 6, 2.5),
         child: Row(
           mainAxisAlignment: .spaceBetween,
           children: [

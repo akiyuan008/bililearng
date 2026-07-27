@@ -128,7 +128,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
       ),
       Container(
         height: 52,
-        padding: const .symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           mainAxisAlignment: .spaceBetween,
           children: [
@@ -138,7 +138,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
                 onPressed: enablePublish.value ? onPublishThrottle : null,
                 style: FilledButton.styleFrom(
                   visualDensity: .compact,
-                  padding: const .symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 child: const Text('发送'),
               ),

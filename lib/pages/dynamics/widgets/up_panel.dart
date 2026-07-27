@@ -53,7 +53,7 @@ class _UpPanelState extends State<UpPanel> {
             child: Container(
               alignment: .center,
               height: isTop ? 76 : 60,
-              padding: isTop ? const .only(left: 12, right: 6) : null,
+              padding: isTop ? const EdgeInsets.only(left: 12, right: 6) : null,
               child: Text.rich(
                 textAlign: .center,
                 style: TextStyle(
@@ -159,7 +159,7 @@ class _UpPanelState extends State<UpPanel> {
       );
     } else {
       avatar = Padding(
-        padding: const .symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         child: NetworkImgLayer(
           width: 38,
           height: 38,
@@ -226,7 +226,7 @@ class _UpPanelState extends State<UpPanel> {
             children: [
               avatar,
               Padding(
-                padding: const .symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Text(
                   isTop ? '${item.uname}\n' : item.uname!,
                   maxLines: 2,

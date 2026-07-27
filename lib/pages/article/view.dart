@@ -158,7 +158,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   }
 
   Widget _buildContent(double maxWidth) => SliverPadding(
-    padding: const .symmetric(horizontal: 12, vertical: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     sliver: Obx(
       () {
         if (controller.isLoaded.value) {
@@ -340,7 +340,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     late final outline = theme.colorScheme.outline;
     late final btnStyle = TextButton.styleFrom(
       tapTargetSize: .padded,
-      padding: const .symmetric(horizontal: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 15),
       foregroundColor: outline,
     );
 
@@ -499,7 +499,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
         Container(
           height: height,
           width: maxWidth,
-          margin: const .only(bottom: 10),
+          margin: const EdgeInsets.only(bottom: 10),
           child: PageView<CustomHorizontalDragGestureRecognizer>.builder(
             physics: clampingScrollPhysics,
             horizontalDragGestureRecognizer:
@@ -577,7 +577,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
         controller.opusData?.modules.moduleAuthor?.pubTs ??
         controller.articleData?.publishTime;
     return Padding(
-      padding: const .symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: GestureDetector(
         onTap: () => Get.toNamed(
           '/member?mid=${controller.summary.author?.mid}',

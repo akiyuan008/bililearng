@@ -85,7 +85,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                 SliverFloatingHeaderWidget(
                   backgroundColor: colorScheme.surface,
                   child: Padding(
-                    padding: const .fromLTRB(12, 2.5, 6, 2.5),
+                    padding: const EdgeInsets.fromLTRB(12, 2.5, 6, 2.5),
                     child: Obx(() {
                       final sortType = _videoReplyController.sortType.value;
                       return Row(

@@ -124,7 +124,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
                     }
                   },
                   child: Padding(
-                    padding: const .symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     child: Text.rich(
                       TextSpan(
                         children: [
@@ -197,7 +197,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
 
   Widget _buildLoadMoreItem(ThemeData theme, bool isFav) {
     return Padding(
-      padding: const .only(top: 7),
+      padding: const EdgeInsets.only(top: 7),
       child: InkWell(
         onTap: () {
           if (isFav) {

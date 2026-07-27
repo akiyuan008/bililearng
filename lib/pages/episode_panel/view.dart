@@ -462,7 +462,7 @@ class _EpisodePanelState extends State<EpisodePanel>
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
             child: Padding(
-              padding: const .symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: Style.safeSpace,
                 vertical: 5,
               ),

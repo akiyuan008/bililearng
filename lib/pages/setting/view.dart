@@ -292,11 +292,11 @@ class _SettingPageState extends State<SettingPage> {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: () => Get.toNamed('/settingsSearch'),
-        borderRadius: const BorderRadius.all(Radius.circular(50)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(50)),
         child: Ink(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(50)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(50)),
             color: theme.colorScheme.onInverseSurface,
           ),
           child: const Center(

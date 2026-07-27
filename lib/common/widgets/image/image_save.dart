@@ -23,7 +23,7 @@ void imageSaveDialog({
       final theme = Theme.of(context);
       return Container(
         width: imgWidth,
-        margin: const .symmetric(horizontal: Style.safeSpace),
+        margin: const EdgeInsets.symmetric(horizontal: Style.safeSpace),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: Style.mdRadius,

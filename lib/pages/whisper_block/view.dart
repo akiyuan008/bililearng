@@ -203,7 +203,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                   ),
                   border: const OutlineInputBorder(
                     borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.all(Radius.circular(25)),
+                    borderRadius: BorderRadius.all(BorderRadius.circular(25)),
                   ),
                   filled: true,
                   fillColor: theme.colorScheme.onInverseSurface,

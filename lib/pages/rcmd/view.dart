@@ -30,7 +30,7 @@ class _RcmdPageState extends State<RcmdPage>
     final colorScheme = ColorScheme.of(context);
     return Container(
       clipBehavior: .hardEdge,
-      margin: const .symmetric(horizontal: Style.safeSpace),
+      margin: const EdgeInsets.symmetric(horizontal: Style.safeSpace),
       decoration: const BoxDecoration(borderRadius: Style.mdRadius),
       child: refreshIndicator(
         onRefresh: controller.onRefresh,
@@ -39,7 +39,7 @@ class _RcmdPageState extends State<RcmdPage>
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(
-              padding: const .only(top: Style.cardSpace, bottom: 100),
+              padding: const EdgeInsets.only(top: Style.cardSpace, bottom: 100),
               sliver: Obx(
                 () => _buildBody(colorScheme, controller.loadingState.value),
               ),
@@ -81,7 +81,7 @@ class _RcmdPageState extends State<RcmdPage>
                         child: Card(
                           child: Container(
                             alignment: Alignment.center,
-                            padding: const .symmetric(horizontal: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Text(
                               '上次看到这里\n点击刷新',
                               textAlign: .center,

@@ -21,7 +21,7 @@ class MemberShopItem extends StatelessWidget {
     return Card(
       clipBehavior: Clip.hardEdge,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderRadius: BorderRadius.all(BorderRadius.circular(6)),
       ),
       child: InkWell(
         onTap: () {

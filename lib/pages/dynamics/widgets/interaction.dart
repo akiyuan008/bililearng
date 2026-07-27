@@ -23,8 +23,8 @@ Widget dynInteraction({
       child = _item(theme, items.single);
     }
     return Container(
-      padding: const .only(left: 8),
-      margin: const .only(left: 12, right: 12, top: 6),
+      padding: const EdgeInsets.only(left: 8),
+      margin: const EdgeInsets.only(left: 12, right: 12, top: 6),
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
@@ -58,7 +58,7 @@ Widget _item(
         WidgetSpan(
           alignment: .middle,
           child: Padding(
-            padding: const .only(right: 6),
+            padding: const EdgeInsets.only(right: 6),
             child: Icon(
               size: 13,
               color: theme.colorScheme.outline,

@@ -296,7 +296,7 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
       decoration: isEnable
           ? BoxDecoration(
               border: Border.all(color: color),
-              borderRadius: const BorderRadius.all(Radius.circular(4)),
+              borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
             )
           : null,
       child: Icon(icon, color: color),

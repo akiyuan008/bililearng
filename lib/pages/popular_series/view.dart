@@ -205,7 +205,7 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
     return SliverFloatingHeaderWidget(
       backgroundColor: colorScheme.surface,
       child: Padding(
-        padding: const .only(left: 14, bottom: 7),
+        padding: const EdgeInsets.only(left: 14, bottom: 7),
         child: child,
       ),
     );

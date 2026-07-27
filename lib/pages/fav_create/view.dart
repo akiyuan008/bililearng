@@ -198,7 +198,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                           context: context,
                           builder: (_) => SimpleDialog(
                             clipBehavior: Clip.hardEdge,
-                            contentPadding: const .symmetric(vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
                             children: [
                               DialogOption(
                                 onPressed: () {

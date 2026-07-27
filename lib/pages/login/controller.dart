@@ -684,9 +684,9 @@ class LoginPageController extends GetxController
             ),
           ],
         ),
-        titlePadding: const .only(left: 22, top: 16, right: 22, bottom: 3),
-        contentPadding: const .symmetric(vertical: 5),
-        actionsPadding: const .only(left: 16, right: 16, bottom: 10),
+        titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22, bottom: 3),
+        contentPadding: const EdgeInsets.symmetric(vertical: 5),
+        actionsPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
         content: SingleChildScrollView(
           child: AnimatedSize(
             curve: Curves.easeIn,
@@ -709,8 +709,8 @@ class LoginPageController extends GetxController
                                 title: entry.value,
                                 mainAxisSize: .max,
                                 padding: PlatformUtils.isDesktop
-                                    ? const .only(left: 12)
-                                    : const .only(left: 12, top: 2, bottom: 2),
+                                    ? const EdgeInsets.only(left: 12)
+                                    : const EdgeInsets.only(left: 12, top: 2, bottom: 2),
                               ),
                             )
                             .toList(),

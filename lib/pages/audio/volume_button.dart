@@ -74,7 +74,7 @@ class _VolumeButtonState extends State<VolumeButton> {
             onTapUp: _onTapUp,
             customBorder: const CircleBorder(),
             child: Padding(
-              padding: const .all(10.0),
+              padding: const EdgeInsets.all(10.0),
               child: Icon(
                 volume == 0.0
                     ? Icons.volume_off
@@ -109,14 +109,14 @@ class _VolumeButtonState extends State<VolumeButton> {
         onEnter: _stopTimer,
         onExit: _scheduleDismiss,
         child: Container(
-          padding: const .fromLTRB(6, 8, 6, 2),
+          padding: const EdgeInsets.fromLTRB(6, 8, 6, 2),
           decoration: BoxDecoration(
             color: ElevationOverlay.applySurfaceTint(
               cardTheme.color ?? theme.surfaceContainerLow,
               cardTheme.surfaceTintColor,
               2,
             ),
-            borderRadius: const .all(.circular(6)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
           ),
           child: SliderTheme(
             data: const SliderThemeData(

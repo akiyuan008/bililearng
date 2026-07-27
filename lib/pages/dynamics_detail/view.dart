@@ -305,7 +305,7 @@ class _DynamicDetailPageState
         indicatorSize: .tab,
         tabAlignment: .start,
         controller: tabController,
-        labelPadding: const .symmetric(horizontal: 12),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 12),
         dividerColor: theme.colorScheme.outline.withValues(alpha: 0.1),
         onTap: (value) {
           if (!tabController.indexIsChanging) {
@@ -392,7 +392,7 @@ class _DynamicDetailPageState
                       color: theme.colorScheme.onSecondary,
                       elevation: 2.0,
                       child: Padding(
-                        padding: const .all(6),
+                        padding: const EdgeInsets.all(6),
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
                           controller: _refreshController,
@@ -655,7 +655,7 @@ class _DynamicDetailPageState
   Widget buildReplyHeader([bool isPortrait = true]) {
     final secondary = theme.colorScheme.secondary;
     final child = Padding(
-      padding: const .fromLTRB(12, 2.5, 6, 2.5),
+      padding: const EdgeInsets.fromLTRB(12, 2.5, 6, 2.5),
       child: Obx(
         () {
           final sortType = controller.sortType.value;

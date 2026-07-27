@@ -139,7 +139,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
               }
             : null,
         child: Padding(
-          padding: const .symmetric(horizontal: Style.safeSpace, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: Style.safeSpace, vertical: 5),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

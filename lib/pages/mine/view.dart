@@ -71,7 +71,7 @@ class _MediaPageState extends CommonPageState<MinePage>
     return Column(
       children: [
         Padding(
-          padding: const .symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: _buildHeaderActions,
         ),
         Expanded(
@@ -81,7 +81,7 @@ class _MediaPageState extends CommonPageState<MinePage>
               onRefresh: controller.onRefresh,
               child: onBuild(
                 ListView(
-                  padding: const .only(bottom: 100),
+                  padding: const EdgeInsets.only(bottom: 100),
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
                     _buildUserInfo(theme, secondary),
@@ -514,12 +514,12 @@ class _MediaPageState extends CommonPageState<MinePage>
             height: 200,
             child: ListView.separated(
               controller: controller.scrollController,
-              padding: const .only(left: 20, top: 10, right: 20),
+              padding: const EdgeInsets.only(left: 20, top: 10, right: 20),
               itemCount: response.list.length + (flag ? 1 : 0),
               itemBuilder: (context, index) {
                 if (flag && index == favFolderList.length) {
                   return Padding(
-                    padding: const .only(bottom: 35),
+                    padding: const EdgeInsets.only(bottom: 35),
                     child: Center(
                       child: IconButton(
                         tooltip: '查看更多',

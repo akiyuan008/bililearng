@@ -139,7 +139,7 @@ Widget module(
               children: [
                 if (common.cover?.isNotEmpty ?? false)
                   ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(6)),
+                    borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                     child: CachedNetworkImage(
                       width: 45,
                       height: 45,

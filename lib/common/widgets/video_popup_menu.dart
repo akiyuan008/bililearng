@@ -76,7 +76,7 @@ class VideoPopupMenu extends StatelessWidget {
                             context: context,
                             builder: (context) => Dialog(
                               child: Padding(
-                                padding: const .symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
                                 child: AiConclusionPanel.buildContent(
                                   context,
                                   Theme.of(context),
@@ -148,7 +148,7 @@ class VideoPopupMenu extends StatelessWidget {
                           context: context,
                           builder: (context) {
                             return SimpleDialog(
-                              contentPadding: const .fromLTRB(24, 16, 24, 24),
+                              contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                               children: [
                                 if (tp.dislikeReasons != null) ...[
                                   const Text('我不想看'),
@@ -205,7 +205,7 @@ class VideoPopupMenu extends StatelessWidget {
                         showDialog(
                           context: context,
                           builder: (context) => SimpleDialog(
-                            contentPadding: const .all(24),
+                            contentPadding: const EdgeInsets.all(24),
                             children: [
                               const Center(child: Text("web端暂不支持精细选择")),
                               const SizedBox(height: 5),

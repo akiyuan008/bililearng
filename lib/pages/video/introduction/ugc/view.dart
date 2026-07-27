@@ -94,7 +94,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     final isPortrait = widget.isPortrait;
     final isHorizontal = !isPortrait && widget.isHorizontal;
     return SliverPadding(
-      padding: const .only(
+      padding: const EdgeInsets.only(
         left: Style.safeSpace,
         right: Style.safeSpace,
         top: 10,
@@ -227,7 +227,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           WidgetSpan(
             alignment: .middle,
             child: Padding(
-              padding: const .only(right: 2),
+              padding: const EdgeInsets.only(right: 2),
               child: Icon(
                 size: 13,
                 Icons.error_outline,
@@ -305,10 +305,10 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     return WidgetSpan(
       alignment: .middle,
       child: Container(
-        padding: const .symmetric(horizontal: 4, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
         ),
         child: Text(
           text,
@@ -342,10 +342,10 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             WidgetSpan(
               alignment: .middle,
               child: Container(
-                padding: const .symmetric(horizontal: 4, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
                   color: colorScheme.secondaryContainer,
-                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                  borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
                 ),
                 child: Row(
                   mainAxisSize: .min,
@@ -838,7 +838,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                                     true,
                           ),
                           child: Ink(
-                            padding: const .all(2),
+                            padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               color: colorScheme.secondaryContainer,
                               shape: .circle,
@@ -1009,7 +1009,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
 
   Widget _buildTags(List<VideoTagItem> tags) {
     return Padding(
-      padding: const .only(top: 8),
+      padding: const EdgeInsets.only(top: 8),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,

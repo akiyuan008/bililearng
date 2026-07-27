@@ -193,7 +193,7 @@ class UserInfoCard extends StatelessWidget {
       }
     }
     return Padding(
-      padding: const .only(left: 20, right: 20),
+      padding: const EdgeInsets.only(left: 20, right: 20),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
@@ -226,7 +226,7 @@ class UserInfoCard extends StatelessWidget {
           ),
           if (card.vip?.status == 1)
             Container(
-              padding: const .symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 borderRadius: Style.mdRadius,
                 color: colorScheme.vipColor,
@@ -263,10 +263,10 @@ class UserInfoCard extends StatelessWidget {
 
   Widget _buildVerify(ColorScheme colorScheme) {
     return Container(
-      margin: const .only(left: 20, top: 8, right: 20),
-      padding: const .symmetric(horizontal: 5, vertical: 2),
+      margin: const EdgeInsets.only(left: 20, top: 8, right: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
-        borderRadius: const .all(.circular(12)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
         color: colorScheme.onInverseSurface,
       ),
       child: Text.rich(
@@ -311,7 +311,7 @@ class UserInfoCard extends StatelessWidget {
 
   Widget _buildSign() {
     return Padding(
-      padding: const .only(left: 20, top: 6, right: 20),
+      padding: const EdgeInsets.only(left: 20, top: 6, right: 20),
       child: SelectionText(
         card.sign!.trim().replaceAll(RegExp(r'\n{2,}'), '\n'),
         style: const TextStyle(fontSize: 14),
@@ -321,7 +321,7 @@ class UserInfoCard extends StatelessWidget {
 
   Widget _buildExtraInfo(ColorScheme colorScheme) {
     return Padding(
-      padding: const .only(left: 20, top: 6, right: 20),
+      padding: const EdgeInsets.only(left: 20, top: 6, right: 20),
       child: Wrap(
         spacing: 10,
         runSpacing: 8,
@@ -362,11 +362,11 @@ class UserInfoCard extends StatelessWidget {
     return Container(
       width: .infinity,
       decoration: BoxDecoration(
-        borderRadius: const .all(.circular(6)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
         color: isLight ? colorScheme.errorContainer : colorScheme.error,
       ),
-      margin: const .only(left: 20, top: 8, right: 20),
-      padding: const .symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.only(left: 20, top: 8, right: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Text.rich(
         TextSpan(
           children: [
@@ -537,7 +537,7 @@ class UserInfoCard extends StatelessWidget {
           border: .all(width: 2, color: scheme.surface),
           shape: .circle,
         ),
-        child: Padding(padding: const .all(2), child: child),
+        child: Padding(padding: const EdgeInsets.all(2), child: child),
       );
     }
     return fromHero(
@@ -737,8 +737,8 @@ class UserInfoCard extends StatelessWidget {
         : null;
 
     Widget child = Container(
-      margin: const .only(top: 8),
-      padding: const .symmetric(horizontal: 16, vertical: 10),
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: ColourUtils.parseColor(
         isLight ? prInfo.bgColor : prInfo.bgColorNight,
       ),
@@ -904,7 +904,7 @@ class UserInfoCard extends StatelessWidget {
             : Wrap(spacing: 10, runSpacing: 6, children: children);
       }
       return Padding(
-        padding: const .only(left: 20, right: 20, top: 6),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 6),
         child: child,
       );
     }
@@ -919,7 +919,7 @@ class UserInfoCard extends StatelessWidget {
     final flag = list.length > 3;
     if (flag) list = list.sublist(0, 3);
     Widget child = Padding(
-      padding: const .only(left: 20, top: 6, right: 20),
+      padding: const EdgeInsets.only(left: 20, top: 6, right: 20),
       child: Row(
         mainAxisSize: .min,
         children: [
@@ -1109,7 +1109,7 @@ Widget _headerWrapper(Widget child) {
           ),
         ),
         child: Padding(
-          padding: const .only(left: 15, right: 5, bottom: 2),
+          padding: const EdgeInsets.only(left: 15, right: 5, bottom: 2),
           child: child,
         ),
       ),

@@ -17,7 +17,7 @@ class OrderedCheckbox extends StatelessWidget {
 
     final child = DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(1.5)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(1.5)),
         border: Border.all(
           color: selected
               ? theme.colorScheme.primary

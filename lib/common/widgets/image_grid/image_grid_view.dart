@@ -191,7 +191,7 @@ class ImageGridView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const .only(top: 6),
+      padding: const EdgeInsets.only(top: 6),
       child: ImageGridBuilder(
         picArr: picArr,
         onTap: (index) => _onTap(context, index),

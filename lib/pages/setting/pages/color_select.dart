@@ -136,7 +136,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               ),
             ),
           Padding(
-            padding: padding + const .all(12),
+            padding: padding + const EdgeInsets.all(12),
             child: Obx(
               () => AnimatedHeight(
                 expand: !ctr.dynamicColor.value,

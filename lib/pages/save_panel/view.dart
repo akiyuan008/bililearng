@@ -351,14 +351,14 @@ class _SavePanelState extends State<SavePanel> {
           ),
           child: Container(
             width: maxWidth,
-            padding: const .symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: RepaintBoundary(
               key: boundaryKey,
               child: Container(
                 clipBehavior: .hardEdge,
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
-                  borderRadius: const .all(.circular(12)),
+                  borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
                 ),
                 child: AnimatedSize(
                   curve: Curves.easeInOut,
@@ -391,11 +391,11 @@ class _SavePanelState extends State<SavePanel> {
                         Container(
                           height: 81,
                           clipBehavior: Clip.hardEdge,
-                          margin: const .symmetric(horizontal: 12),
-                          padding: const .all(8),
+                          margin: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.onInverseSurface,
-                            borderRadius: const .all(.circular(8)),
+                            borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
                           ),
                           child: Row(
                             spacing: 10,
@@ -407,7 +407,7 @@ class _SavePanelState extends State<SavePanel> {
                                     ? coverSize * Style.aspectRatio16x9
                                     : coverSize,
                                 quality: 100,
-                                borderRadius: const .all(.circular(6)),
+                                borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                               ),
                               Expanded(
                                 child: Column(
@@ -489,8 +489,8 @@ class _SavePanelState extends State<SavePanel> {
                                           child: Container(
                                             width: 88,
                                             height: 88,
-                                            margin: const .all(12),
-                                            padding: const .all(3),
+                                            margin: const EdgeInsets.all(12),
+                                            padding: const EdgeInsets.all(3),
                                             color: theme.isDark
                                                 ? Colors.white
                                                 : theme.colorScheme.surface,

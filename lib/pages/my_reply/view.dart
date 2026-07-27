@@ -153,7 +153,7 @@ class _MyReplyState extends State<MyReply> with DynMixin {
       context: context,
       builder: (context) => SimpleDialog(
         clipBehavior: .hardEdge,
-        contentPadding: const .symmetric(vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
           ListTile(
             dense: true,
@@ -197,7 +197,7 @@ class _MyReplyState extends State<MyReply> with DynMixin {
       context: context,
       builder: (context) => SimpleDialog(
         clipBehavior: .hardEdge,
-        contentPadding: const .symmetric(vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
           ListTile(
             dense: true,

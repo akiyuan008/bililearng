@@ -165,7 +165,7 @@ class _LogsPageState extends State<LogsPage> {
                   if (_deviceInfo != null)
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const .only(bottom: 12),
+                        padding: const EdgeInsets.only(bottom: 12),
                         child: _InfoCard(info: _deviceInfo!),
                       ),
                     ),
@@ -357,10 +357,10 @@ class _ReportCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const .all(12),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: colorScheme.surface,
-            borderRadius: const .all(.circular(8)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
             border: .all(color: colorScheme.outline.withValues(alpha: 0.5)),
           ),
           child: SelectionText(
@@ -384,10 +384,10 @@ class _ReportCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const .all(12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              borderRadius: const .all(.circular(8)),
+              borderRadius: const BorderRadius.all(BorderRadius.circular(8)),
               border: .all(color: colorScheme.outline.withValues(alpha: 0.5)),
             ),
             child: SelectionText.rich(
@@ -418,7 +418,7 @@ class _ReportCard extends StatelessWidget {
 Widget _card(List<Widget> contents) {
   return Card(
     child: Padding(
-      padding: const .all(12),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: .stretch,
         children: contents,

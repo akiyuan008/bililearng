@@ -87,7 +87,7 @@ class VideoCardH extends StatelessWidget {
                   }
                 },
             child: Padding(
-              padding: const .symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: Style.safeSpace,
                 vertical: 5,
               ),

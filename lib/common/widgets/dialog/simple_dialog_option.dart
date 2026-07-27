@@ -2,8 +2,8 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 final EdgeInsets _padding = PlatformUtils.isMobile
-    ? const .symmetric(horizontal: 16, vertical: 14)
-    : const .symmetric(horizontal: 16, vertical: 10);
+    ? const EdgeInsets.symmetric(horizontal: 16, vertical: 14)
+    : const EdgeInsets.symmetric(horizontal: 16, vertical: 10);
 
 class DialogOption extends StatelessWidget {
   const DialogOption({

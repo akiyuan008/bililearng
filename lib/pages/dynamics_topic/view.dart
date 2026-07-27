@@ -99,7 +99,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                                   minHeight: 24,
                                 ),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                borderRadius: const .all(.circular(25)),
+                                borderRadius: const BorderRadius.all(BorderRadius.circular(25)),
                                 onPressed: (index) {
                                   _controller.onSort(allSortBy[index].sortBy!);
                                   (context as Element).markNeedsBuild();
@@ -409,13 +409,13 @@ class _DynTopicPageState extends State<DynTopicPage>
 
   Widget _buildFoldItem(FoldCardItem item) {
     return Padding(
-      padding: const .only(top: 12),
+      padding: const EdgeInsets.only(top: 12),
       child: Material(
         color: colorScheme.outline.withValues(alpha: .05),
         child: InkWell(
           onTap: _controller.topicFold,
           child: Padding(
-            padding: const .symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
               mainAxisSize: .min,
               mainAxisAlignment: .center,

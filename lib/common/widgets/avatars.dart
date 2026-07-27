@@ -39,7 +39,7 @@ Widget avatars({
                 child: DecoratedBox(
                   decoration: decoration,
                   child: Padding(
-                    padding: const .all(padding),
+                    padding: const EdgeInsets.all(padding),
                     child: NetworkImgLayer(
                       src: e.face,
                       width: imgSize,

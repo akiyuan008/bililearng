@@ -162,7 +162,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
           child: Material(
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            borderRadius: const BorderRadius.all(BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: ListView(
@@ -221,7 +221,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                   const Text('按类型屏蔽'),
                   SingleChildScrollView(
                     scrollDirection: .horizontal,
-                    padding: const .symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Row(
                       spacing: 10,
                       children: blockTypesList.map(
@@ -241,7 +241,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                   const Text('其他'),
                   SingleChildScrollView(
                     scrollDirection: .horizontal,
-                    padding: const .symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Row(
                       spacing: 10,
                       children: [

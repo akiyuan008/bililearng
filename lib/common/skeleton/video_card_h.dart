@@ -10,7 +10,7 @@ class VideoCardHSkeleton extends StatelessWidget {
     final color = Theme.of(context).colorScheme.onInverseSurface;
     return Skeleton(
       child: Padding(
-        padding: const .symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: Style.safeSpace,
           vertical: 5,
         ),
@@ -28,7 +28,7 @@ class VideoCardHSkeleton extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: const .fromLTRB(10, 4, 6, 4),
+                padding: const EdgeInsets.fromLTRB(10, 4, 6, 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

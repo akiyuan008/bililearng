@@ -38,7 +38,7 @@ class _SliderDialogState extends State<SliderDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: widget.title,
-      contentPadding: const .only(top: 20, left: 8, right: 8, bottom: 8),
+      contentPadding: const EdgeInsets.only(top: 20, left: 8, right: 8, bottom: 8),
       content: SizedBox(
         height: 40,
         child: Slider(

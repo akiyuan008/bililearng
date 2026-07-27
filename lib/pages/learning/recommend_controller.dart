@@ -1,6 +1,7 @@
 // [PiliPlus Learning] 学习推荐控制器
-// 调用 B站排行榜 API 获取知识区(rid=36)和科技区(rid=188)的热门视频,
-// 经学习过滤算法过滤后存入视频池,按每页8个分页展示。
+// 仅调用 B站排行榜 API 获取知识区(rid=36)的热门视频,
+// 经高中专属过滤算法过滤后存入视频池,按每页8个分页展示。
+// 已删除科技区(rid=188),专注学科系统性内容。
 // 下拉刷新: 从视频池中随机抽取新的8个视频(可撤回上一次刷新)。
 // 底部按钮: 上一页/下一页 用于按顺序浏览视频池。
 import 'dart:math';
@@ -46,9 +47,8 @@ class RecommendController extends GetxController {
   /// 顺序浏览模式的历史页索引(用于区分刷新和翻页)
   int _lastPageIndex = 1;
 
-  /// 学习类分区 rid
+  /// 学习类分区 rid —— 仅知识区,已删除科技区(rid=188)
   static const int _knowledgeRid = 36; // 知识区
-  static const int _techRid = 188; // 科技区
 
   @override
   void onInit() {
@@ -61,16 +61,12 @@ class RecommendController extends GetxController {
     isLoading.value = true;
     errMsg.value = '';
     try {
-      final results = await Future.wait([
-        VideoHttp.getRankVideoList(_knowledgeRid),
-        VideoHttp.getRankVideoList(_techRid),
-      ]);
+      // 仅拉取知识区(rid=36),已删除科技区(rid=188)
+      final result = await VideoHttp.getRankVideoList(_knowledgeRid);
 
       final all = <HotVideoItemModel>[];
-      for (final result in results) {
-        if (result case Success(:final response)) {
-          all.addAll(response);
-        }
+      if (result case Success(:final response)) {
+        all.addAll(response);
       }
 
       // 学习视频过滤

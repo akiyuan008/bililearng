@@ -111,7 +111,7 @@ class PendantAvatar extends StatelessWidget {
       child: GestureDetector(
         onTap: () => PageUtils.toLiveRoom(roomId),
         child: Container(
-          padding: const .symmetric(horizontal: 5, vertical: 1),
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
           decoration: BoxDecoration(
             color: colorScheme.secondaryContainer,
             borderRadius: Style.mdRadius,

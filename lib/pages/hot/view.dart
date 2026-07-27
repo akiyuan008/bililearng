@@ -67,7 +67,7 @@ class _HotPageState extends State<HotPage>
           if (Pref.showHotRcmd)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const .only(left: 12, top: 12, right: 12),
+                padding: const EdgeInsets.only(left: 12, top: 12, right: 12),
                 child: Row(
                   mainAxisAlignment: .spaceEvenly,
                   children: [

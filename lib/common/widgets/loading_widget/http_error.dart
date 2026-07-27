@@ -31,7 +31,7 @@ class HttpError extends StatelessWidget {
         SvgPicture.asset(Assets.error, height: 200),
         const SizedBox(height: 30),
         Padding(
-          padding: const .symmetric(horizontal: 16, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
           child: SelectionText(
             errMsg ?? '没有数据',
             textAlign: .center,

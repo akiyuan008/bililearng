@@ -121,7 +121,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
             height: 85,
             child: ListView.separated(
               scrollDirection: .horizontal,
-              padding: const .fromLTRB(15, 0, 15, 10),
+              padding: const EdgeInsets.fromLTRB(15, 0, 15, 10),
               itemCount: imageList.length,
               itemBuilder: (_, index) => buildImage(index, 75),
               separatorBuilder: (_, _) => const SizedBox(width: 10),
@@ -255,7 +255,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
               child: Container(
                 decoration: BoxDecoration(
                   color: themeData.colorScheme.onInverseSurface,
-                  borderRadius: const BorderRadius.all(Radius.circular(6)),
+                  borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
                 ),
                 alignment: Alignment.center,
                 child: icon,

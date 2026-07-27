@@ -21,9 +21,9 @@ Future<void> autoWrapReportDialog(
     context: context,
     builder: (context) => AlertDialog(
       title: const Text('举报'),
-      titlePadding: const .only(left: 22, top: 16, right: 22),
-      contentPadding: const .symmetric(vertical: 5),
-      actionsPadding: const .only(left: 16, right: 16, bottom: 10),
+      titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22),
+      contentPadding: const EdgeInsets.symmetric(vertical: 5),
+      actionsPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +58,7 @@ Future<void> autoWrapReportDialog(
                       ),
                       if (reasonType == 0)
                         Padding(
-                          padding: const .only(left: 22, top: 5, right: 22),
+                          padding: const EdgeInsets.only(left: 22, top: 5, right: 22),
                           child: TextFormField(
                             key: key,
                             autofocus: true,

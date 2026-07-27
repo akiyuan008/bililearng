@@ -128,7 +128,7 @@ abstract final class ThemeUtils {
         ),
         decoration: BoxDecoration(
           color: Colors.grey[700]!.withValues(alpha: 0.9),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
         ),
       ),
       cupertinoOverrideTheme: CupertinoThemeData(

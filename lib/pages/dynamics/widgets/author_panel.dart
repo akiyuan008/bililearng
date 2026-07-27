@@ -159,9 +159,9 @@ class AuthorPanel extends StatelessWidget {
         children: [
           Expanded(child: header),
           Container(
-            padding: const .symmetric(horizontal: 4, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
-              borderRadius: const .all(.circular(4)),
+              borderRadius: const BorderRadius.all(BorderRadius.circular(4)),
               border: .all(width: 1.25, color: theme.colorScheme.primary),
             ),
             child: Text(
@@ -217,7 +217,7 @@ class AuthorPanel extends StatelessWidget {
               ),
             ),
           Padding(
-            padding: const .only(right: 80),
+            padding: const EdgeInsets.only(right: 80),
             child: header,
           ),
         ],
@@ -286,7 +286,7 @@ class AuthorPanel extends StatelessWidget {
                       height: 3,
                       decoration: BoxDecoration(
                         color: theme.colorScheme.outline,
-                        borderRadius: const .all(.circular(1.5)),
+                        borderRadius: const BorderRadius.all(BorderRadius.circular(1.5)),
                       ),
                     ),
                   ),
@@ -435,7 +435,7 @@ class AuthorPanel extends StatelessWidget {
 
                               return SimpleDialog(
                                 clipBehavior: .hardEdge,
-                                contentPadding: const .symmetric(vertical: 12),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 12),
                                 children: [
                                   ListTile(
                                     dense: true,
@@ -504,7 +504,7 @@ class AuthorPanel extends StatelessWidget {
                         context: context,
                         builder: (context) => SimpleDialog(
                           clipBehavior: Clip.hardEdge,
-                          contentPadding: const .symmetric(vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
                           children: [
                             ListTile(
                               dense: true,

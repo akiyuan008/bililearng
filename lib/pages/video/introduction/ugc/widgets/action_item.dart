@@ -67,7 +67,7 @@ class ActionItem extends StatelessWidget {
     child = Material(
       type: .transparency,
       child: InkWell(
-        borderRadius: const .all(.circular(6)),
+        borderRadius: const BorderRadius.all(BorderRadius.circular(6)),
         onTap: _isThumbsUp ? null : onTap,
         onLongPress: _isThumbsUp ? null : onLongPress,
         onSecondaryTap: PlatformUtils.isMobile || _isThumbsUp
