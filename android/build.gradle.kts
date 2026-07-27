@@ -2,11 +2,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 allprojects {
     repositories {
-        // 阿里云镜像(与 settings.gradle.kts 保持一致)
-        maven { url = uri("https://maven.aliyun.com/repository/google") }
-        maven { url = uri("https://maven.aliyun.com/repository/central") }
-        maven { url = uri("https://maven.aliyun.com/repository/public") }
-        // 兜底
         google()
         mavenCentral()
     }
