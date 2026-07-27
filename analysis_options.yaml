@@ -10,6 +10,8 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  enable-experiment:
+    - dot-shorthands
   exclude:
     - lib/grpc/bilibili/**
     # - lib/common/widgets/flutter/**
