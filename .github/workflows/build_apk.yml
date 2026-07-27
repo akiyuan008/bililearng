@@ -22,9 +22,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       - name: Run build_runner
-        run: dart run --enable-experiment=dot-shorthands build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --delete-conflicting-outputs
       - name: Build APK
-        run: flutter build apk --release --extra-front-end-options=--enable-experiment=dot-shorthands
+        run: flutter build apk --release
       - name: Upload APK
         uses: actions/upload-artifact@v4
         if: success()
