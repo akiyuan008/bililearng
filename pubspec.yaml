@@ -100,7 +100,7 @@ dependencies:
   url_launcher: 6.3.2
   uuid: 4.6.0
   vector_math: 2.2.0
-  wakelock_plus: 1.7.0
+  wakelock_plus: 1.6.1
   waterfall_flow: 3.1.1
   web_socket_channel: 3.0.3
   webdav_client:
