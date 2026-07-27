@@ -225,6 +225,7 @@ class MainController extends GetxController
     // 彻底隐藏原首页 / 动态 Tab;不再读取用户自定义 navBarSort,
     // 以免旧索引(含已隐藏的 home/dynamics)导致越界或显示无关页面。
     navigationBars = <NavigationBarType>[
+      NavigationBarType.recommend,
       NavigationBarType.learning,
       NavigationBarType.subscription,
       NavigationBarType.setting,

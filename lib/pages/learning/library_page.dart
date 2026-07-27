@@ -1,6 +1,6 @@
 // [PiliPlus Learning] 学习库入口页
 // 极简入口,复用原项目已有的稍后再看(/later)、收藏(/fav)、历史记录(/history)路由。
-// 不新增业务逻辑,仅做导航聚合,确保"做减法"不删原文件。
+// 顶部添加搜索入口,修复原导航裁剪导致搜索不可用的问题。
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -34,7 +34,16 @@ class LearningLibraryPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('学习库')),
+      appBar: AppBar(
+        title: const Text('学习库'),
+        actions: [
+          IconButton(
+            tooltip: '搜索',
+            icon: const Icon(Icons.search),
+            onPressed: () => Get.toNamed('/search'),
+          ),
+        ],
+      ),
       body: ListView.separated(
         padding: const EdgeInsets.all(12),
         itemCount: entries.length,

@@ -9,8 +9,8 @@ class SubscriptionController extends GetxController {
   /// 聚合后的视频流(按 pubdate 倒序)
   final RxList<FeedItem> feedList = <FeedItem>[].obs;
 
-  /// 白名单 UP 主 UID
-  final RxList<String> whiteList = <String>[].obs;
+  /// 白名单 UP 主信息列表
+  final RxList<UpInfo> whiteList = <UpInfo>[].obs;
 
   /// 加载状态
   final RxBool isLoading = false.obs;
@@ -35,20 +35,19 @@ class SubscriptionController extends GetxController {
   /// 加载白名单
   Future<void> loadWhiteList() async {
     await WhiteListRepo.ensureInit();
-    whiteList.value = WhiteListRepo.getUids();
+    whiteList.value = WhiteListRepo.getUpList();
   }
 
   /// 添加白名单 UP 主
-  Future<void> addUp(String uid) async {
-    final trimmed = uid.trim();
-    if (trimmed.isEmpty) return;
-    await WhiteListRepo.addUid(trimmed);
+  Future<void> addUp(UpInfo up) async {
+    if (up.mid.isEmpty) return;
+    await WhiteListRepo.addUp(up);
     await loadWhiteList();
   }
 
   /// 移除白名单 UP 主
-  Future<void> removeUp(String uid) async {
-    await WhiteListRepo.removeUid(uid);
+  Future<void> removeUp(String mid) async {
+    await WhiteListRepo.removeUp(mid);
     await loadWhiteList();
   }
 
@@ -62,7 +61,8 @@ class SubscriptionController extends GetxController {
     isLoading.value = true;
     errMsg.value = '';
     try {
-      final list = await FeedAggregator.fetch(whiteList.toList());
+      final uids = whiteList.map((e) => e.mid).toList();
+      final list = await FeedAggregator.fetch(uids);
       feedList.value = list;
       if (list.isEmpty) {
         errMsg.value = '暂无视频,请检查白名单或网络';

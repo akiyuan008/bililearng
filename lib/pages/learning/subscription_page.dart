@@ -1,8 +1,9 @@
 // [PiliPlus Learning] 专注订阅极简瀑布流 UI
-// 仅显示:封面 / 标题 / UP主,去除播放量。
-// 使用原项目依赖 waterfall_flow 实现瀑布流,cached_network_image_ce 加载封面,
-// PageUtils.toVideoPage 复用原项目视频详情页跳转。
+// 从登录账号的关注列表选择 UP 主,无需手动输入 UID。
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/pages/follow_search/view.dart';
+import 'package:PiliPlus/pages/share/view.dart';
+import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -14,6 +15,7 @@ import 'package:waterfall_flow/waterfall_flow.dart';
 
 import 'feed_aggregator.dart';
 import 'subscription_controller.dart';
+import 'white_list_repo.dart';
 
 class SubscriptionPage extends StatefulWidget {
   const SubscriptionPage({super.key});
@@ -33,14 +35,14 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         title: const Text('专注订阅'),
         actions: [
           IconButton(
-            tooltip: '添加 UP 主',
+            tooltip: '从关注列表添加',
             icon: const Icon(Icons.person_add_outlined),
-            onPressed: _showAddUpDialog,
+            onPressed: _addFromFollowList,
           ),
           IconButton(
-            tooltip: '白名单管理',
-            icon: const Icon(Icons.manage_accounts_outlined),
-            onPressed: _showWhiteListSheet,
+            tooltip: '搜索',
+            icon: const Icon(Icons.search),
+            onPressed: () => Get.toNamed('/search'),
           ),
         ],
       ),
@@ -85,52 +87,42 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           ),
           const SizedBox(height: 16),
           FilledButton.tonalIcon(
-            onPressed: _showAddUpDialog,
+            onPressed: _addFromFollowList,
             icon: const Icon(Icons.person_add_outlined),
-            label: const Text('添加 UP 主'),
+            label: const Text('从关注列表添加 UP 主'),
           ),
         ],
       ),
     );
   }
 
-  void _showAddUpDialog() {
-    final controller = TextEditingController();
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('添加 UP 主'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'UP 主 UID',
-            hintText: '请输入数字 UID',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final uid = controller.text.trim();
-              if (uid.isNotEmpty) {
-                Navigator.pop(ctx);
-                await _ctr.addUp(uid);
-                await _ctr.refreshFeed();
-              }
-            },
-            child: const Text('添加'),
-          ),
-        ],
+  /// 从关注列表选择 UP 主
+  void _addFromFollowList() async {
+    final mid = Accounts.main.mid;
+    if (!Accounts.main.isLogin) {
+      SmartDialog.showToast('请先登录 B站账号');
+      return;
+    }
+
+    // 打开关注列表搜索页,支持选择返回
+    final UserModel? userModel = await Navigator.of(context).push<UserModel>(
+      GetPageRoute(
+        page: () => FollowSearchPage(mid: mid, isFromSelect: true),
       ),
     );
+
+    if (userModel != null) {
+      await _ctr.addUp(UpInfo(
+        mid: userModel.mid.toString(),
+        name: userModel.name,
+        face: userModel.avatar,
+      ));
+      await _ctr.refreshFeed();
+      SmartDialog.showToast('已添加: ${userModel.name}');
+    }
   }
 
+  /// 白名单管理底部弹窗
   void _showWhiteListSheet() {
     showModalBottomSheet<void>(
       context: context,
@@ -148,11 +140,25 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(12),
-                child: Text(
-                  '白名单管理',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '白名单管理',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _addFromFollowList();
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('添加'),
+                    ),
+                  ],
                 ),
               ),
               const Divider(height: 1),
@@ -162,7 +168,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(24),
-                        child: Text('白名单为空', style: TextStyle(color: Colors.grey)),
+                        child: Text('白名单为空',
+                            style: TextStyle(color: Colors.grey)),
                       ),
                     );
                   }
@@ -171,15 +178,30 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     itemCount: _ctr.whiteList.length,
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, index) {
-                      final uid = _ctr.whiteList[index];
+                      final up = _ctr.whiteList[index];
                       return ListTile(
-                        leading: const Icon(Icons.account_circle_outlined),
-                        title: Text('UID: $uid'),
+                        leading: up.face.isNotEmpty
+                            ? CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  up.face.http2https,
+                                  headers: const {
+                                    'referer': 'https://www.bilibili.com'
+                                  },
+                                ),
+                                child: up.face.isEmpty
+                                    ? const Icon(Icons.person)
+                                    : null,
+                              )
+                            : const CircleAvatar(
+                                child: Icon(Icons.person),
+                              ),
+                        title: Text(up.name),
+                        subtitle: Text('UID: ${up.mid}'),
                         trailing: IconButton(
                           tooltip: '移除',
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () async {
-                            await _ctr.removeUp(uid);
+                            await _ctr.removeUp(up.mid);
                             await _ctr.refreshFeed();
                           },
                         ),
@@ -200,7 +222,6 @@ class _VideoCard extends StatelessWidget {
   final FeedItem item;
   const _VideoCard({required this.item});
 
-  /// 构建封面 Widget,处理空 URL / null 情况
   Widget _buildCover(String? cover) {
     final url = cover?.http2https ?? '';
     if (url.isEmpty) {
@@ -229,8 +250,6 @@ class _VideoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        // 原项目标准:仅有 bvid 时先通过 ab2c 接口获取 cid 再跳转,
-        // cid 传 0 会导致视频详情页无法播放。
         if (item.bvid == null && item.aid == null) return;
         SmartDialog.showLoading<dynamic>(msg: '获取视频中...');
         try {
@@ -261,7 +280,6 @@ class _VideoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 封面(16:9)
             AspectRatio(
               aspectRatio: 16 / 9,
               child: _buildCover(item.cover),
@@ -278,7 +296,6 @@ class _VideoCard extends StatelessWidget {
                 ),
               ),
             ),
-            // UP 主(去除播放量)
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
               child: Row(

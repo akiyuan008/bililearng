@@ -3,6 +3,7 @@ import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/dynamics/view.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/learning/library_page.dart';
+import 'package:PiliPlus/pages/learning/recommend_page.dart';
 import 'package:PiliPlus/pages/learning/subscription_page.dart';
 import 'package:PiliPlus/pages/mine/view.dart';
 import 'package:PiliPlus/pages/setting/view.dart';
@@ -51,6 +52,13 @@ enum NavigationBarType implements EnumWithLabel {
     Icon(Icons.rss_feed_outlined),
     Icon(Icons.rss_feed),
     SubscriptionPage(),
+  ),
+  // [PiliPlus Learning] 新增:学习推荐 Tab —— 知识区+科技区排行榜
+  recommend(
+    '学习推荐',
+    Icon(Icons.school_outlined),
+    Icon(Icons.school),
+    RecommendPage(),
   ),
   ;
 
