@@ -109,6 +109,7 @@ dependencies:
   window_manager:
     path: vendor/window_manager/packages/window_manager
 dependency_overrides:
+  meta: 1.18.0
   flutter_inappwebview_android:
     path: vendor/flutter_inappwebview/flutter_inappwebview_android
   flutter_inappwebview_windows:
