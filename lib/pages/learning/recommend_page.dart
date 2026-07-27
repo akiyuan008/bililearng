@@ -1,5 +1,5 @@
 // [PiliPlus Learning] 学习推荐页
-// 分页展示知识区和科技区排行榜视频,每页8个。
+// 分页展示知识区排行榜视频(已移除科技区),每页8个。
 // 下拉刷新: 从视频池随机换一批(可撤回),底部按钮可顺序翻页。
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
