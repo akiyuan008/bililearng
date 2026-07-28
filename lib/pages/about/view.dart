@@ -268,6 +268,23 @@ Commit Hash: ${BuildConfig.commitHash}''',
             ),
           ),
           ListTile(
+            title: const Text('导入/导出全部配置'),
+            subtitle: const Text('含设置、搜索历史、学习统计、订阅白名单'),
+            dense: false,
+            leading: const Icon(Icons.settings_backup_restore_outlined),
+            onTap: () async {
+              await GStorage.ensureLearningBoxesInit();
+              if (!context.mounted) return;
+              showImportExportDialog<Map<String, dynamic>>(
+                context,
+                title: '全部配置',
+                localFileName: () => 'all_config_${DeviceUtils.platformName}',
+                onExport: GStorage.exportAllConfigSync,
+                onImport: GStorage.importAllConfig,
+              );
+            },
+          ),
+          ListTile(
             title: const Text('重置所有设置'),
             leading: const Icon(Icons.settings_backup_restore_outlined),
             onTap: () => showDialog(

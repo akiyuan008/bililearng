@@ -14,6 +14,8 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path/path.dart' as path;
+import 'package:PiliPlus/pages/learning/stats_repo.dart';
+import 'package:PiliPlus/pages/learning/white_list_repo.dart';
 
 abstract final class GStorage {
   static late final Box<UserInfoData> userInfo;
@@ -82,6 +84,54 @@ abstract final class GStorage {
       setting.name: setting.toMap(),
       video.name: video.toMap(),
     });
+  }
+
+  /// 确保学习模块 Box 已初始化(导出前调用)
+  static Future<void> ensureLearningBoxesInit() async {
+    await StatsRepo.ensureInit();
+    await WhiteListRepo.ensureInit();
+  }
+
+  /// 导出全部配置(同步,需先调用 ensureLearningBoxesInit)
+  /// 含设置、视频配置、搜索历史、学习统计、订阅白名单
+  static String exportAllConfigSync() {
+    return Utils.jsonEncoder.convert({
+      'setting': setting.toMap(),
+      'video': video.toMap(),
+      'historyWord': historyWord.toMap(),
+      'learningStats': Hive.box<dynamic>('learningStats').toMap(),
+      'learningWhiteList':
+          Hive.box<dynamic>('learningWhiteList').toMap(),
+    });
+  }
+
+  /// 导入全部配置(含设置、视频配置、搜索历史、学习统计、订阅白名单)
+  static Future<void> importAllConfig(Map<String, dynamic> map) async {
+
+    // 导入基础设置
+    await Future.wait([
+      setting.clear().then((_) => setting.putAll(map['setting'] ?? {})),
+      video.clear().then((_) => video.putAll(map['video'] ?? {})),
+      historyWord
+          .clear()
+          .then((_) => historyWord.putAll(map['historyWord'] ?? {})),
+    ]);
+
+    // 导入学习统计数据
+    await StatsRepo.ensureInit();
+    final statsBox = Hive.box<dynamic>('learningStats');
+    await statsBox.clear();
+    if (map['learningStats'] != null) {
+      await statsBox.putAll(map['learningStats']);
+    }
+
+    // 导入订阅白名单
+    await WhiteListRepo.ensureInit();
+    final whiteListBox = Hive.box<dynamic>('learningWhiteList');
+    await whiteListBox.clear();
+    if (map['learningWhiteList'] != null) {
+      await whiteListBox.putAll(map['learningWhiteList']);
+    }
   }
 
   static Future<void> importAllSettings(String data) =>

@@ -866,10 +866,10 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.defaultShowComment, defaultValue: false);
 
   static bool get enableTrending =>
-      _setting.get(SettingBoxKey.enableHotKey, defaultValue: true);
+      _setting.get(SettingBoxKey.enableHotKey, defaultValue: false);
 
   static bool get enableSearchRcmd =>
-      _setting.get(SettingBoxKey.enableSearchRcmd, defaultValue: true);
+      _setting.get(SettingBoxKey.enableSearchRcmd, defaultValue: false);
 
   static bool get enableSaveLastData =>
       _setting.get(SettingBoxKey.enableSaveLastData, defaultValue: true);

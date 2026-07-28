@@ -59,8 +59,9 @@ class BaseSearchController extends GetxController {
 
   final recordSearchHistory = Pref.recordSearchHistory.obs;
   final searchSuggestion = Pref.searchSuggestion;
-  final enableTrending = Pref.enableTrending;
-  final enableSearchRcmd = Pref.enableSearchRcmd;
+  // 强制禁用热搜和搜索推荐
+  final bool enableTrending = false;
+  final bool enableSearchRcmd = false;
 
   @override
   void onInit() {

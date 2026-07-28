@@ -66,7 +66,6 @@ android {
         }
         release {
             if (project.hasProperty("dev")) {
-                applicationIdSuffix = ".dev"
                 resValue(
                     type = "string",
                     name = "app_name",
@@ -79,7 +78,7 @@ android {
 //            )
         }
         debug {
-            applicationIdSuffix = ".debug"
+            // 保持包名一致,避免更新后需要重新登录
         }
     }
 
