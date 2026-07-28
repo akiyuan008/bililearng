@@ -1,6 +1,6 @@
-// [PiliPlus Learning] 专注订阅极简瀑布流 UI
+// [PiliPlus Learning] 专注订阅页
+// 仿推荐页:视频池+分页+换一批+撤回
 // 从登录账号的关注列表选择 UP 主,无需手动输入 UID。
-// 支持两种添加方式:1)搜索关注列表单选 2)浏览全部关注列表多选
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/pages/follow_search/view.dart';
 import 'package:PiliPlus/pages/share/view.dart';
@@ -59,31 +59,144 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         ],
       ),
       body: Obx(() {
-        if (_ctr.isLoading.value && _ctr.feedList.isEmpty) {
+        if (_ctr.isLoading.value && _ctr.currentPage.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (_ctr.feedList.isEmpty) {
+        if (_ctr.currentPage.isEmpty) {
           return _buildEmpty();
         }
-        return RefreshIndicator(
-          onRefresh: _ctr.refreshFeed,
-          child: WaterfallFlow.builder(
-            gridDelegate:
-                const SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+        return Column(
+          children: [
+            // 页码指示器
+            _buildPageIndicator(),
+            // 视频列表
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _ctr.shuffleRefresh,
+                child: WaterfallFlow.builder(
+                  gridDelegate:
+                      const SliverWaterfallFlowDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: _ctr.currentPage.length,
+                  itemBuilder: (context, index) {
+                    return _VideoCard(item: _ctr.currentPage[index]);
+                  },
+                ),
+              ),
             ),
-            padding: const EdgeInsets.all(8),
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: _ctr.feedList.length,
-            itemBuilder: (context, index) {
-              return _VideoCard(item: _ctr.feedList[index]);
-            },
-          ),
+            // 底部导航栏
+            _buildBottomBar(),
+          ],
         );
       }),
     );
+  }
+
+  Widget _buildPageIndicator() {
+    return Obx(() => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.subscriptions_outlined,
+                size: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 6),
+              if (_ctr.refreshCount.value > 0) ...[
+                Text(
+                  '已刷新 ${_ctr.refreshCount.value} 次',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ] else ...[
+                Text(
+                  '第 ${_ctr.pageIndex.value} / ${_ctr.totalPages.value} 页',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '池中 ${_ctr.poolSize} 个',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '下拉换一批',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildBottomBar() {
+    return Obx(() => Container(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border(
+              top: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // 撤回
+              TextButton.icon(
+                onPressed:
+                    _ctr.canUndo.value ? _ctr.undoRefresh : null,
+                icon: const Icon(Icons.undo, size: 18),
+                label: const Text('撤回'),
+              ),
+              // 换一批
+              FilledButton.tonalIcon(
+                onPressed: () => _ctr.shuffleRefresh(),
+                icon: const Icon(Icons.shuffle, size: 18),
+                label: const Text('换一批'),
+              ),
+              // 下一页
+              TextButton.icon(
+                onPressed: () => _ctr.nextPage(),
+                icon: const Icon(Icons.arrow_forward, size: 18),
+                label: const Text('下一页'),
+              ),
+            ],
+          ),
+        ));
   }
 
   Widget _buildEmpty() {
@@ -124,7 +237,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       return;
     }
 
-    // 打开关注列表搜索页,支持选择返回
     final UserModel? userModel = await Navigator.of(context).push<UserModel>(
       GetPageRoute(
         page: () => FollowSearchPage(mid: mid, isFromSelect: true),

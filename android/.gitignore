@@ -14,3 +14,8 @@ key.properties
 
 /build
 /.kotlin
+
+# Keep bililearn signing key for consistent builds
+!key.properties
+!bililearn.jks
+!**/bililearn.jks
