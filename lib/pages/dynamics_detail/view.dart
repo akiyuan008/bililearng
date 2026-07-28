@@ -244,7 +244,7 @@ class _DynamicDetailPageState
       items: items,
       pics: opus?.pics,
       topic: topic,
-      replyOption: replyOption ?? ReplyOption.allow,
+      replyOption: replyOption ?? ReplyOptionType.allow,
       isPrivate: item.modules.moduleAuthor?.badgeText != null,
       editConfig: (
         dynId: item.idStr,

@@ -39,7 +39,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 abstract final class PageUtils {
   static RelativeRect menuPosition(Offset offset) {
-    return Rect.fromLTRB(offset.dx, offset.dy, offset.dx, 0);
+    return RelativeRect.fromLTRB(offset.dx, offset.dy, offset.dx, 0);
   }
 
   static Future<void> imageView({

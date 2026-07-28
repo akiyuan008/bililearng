@@ -15,6 +15,7 @@ import 'package:PiliPlus/common/widgets/gesture/player_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/player_bar.dart';
+import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -1703,9 +1704,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 final showControls = plPlayerController.showControls.value;
                 final bool offstage;
                 switch (plPlayerController.progressType) {
-                  case .alwaysShow:
+                  case BtmProgressBehavior.alwaysShow:
                     offstage = showControls;
-                  case .alwaysHide:
+                  case BtmProgressBehavior.alwaysHide:
                     if (!plPlayerController.isSeeking.value) {
                       return const SizedBox.shrink();
                     }

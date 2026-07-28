@@ -280,11 +280,11 @@ extension type LevelCanvas(Canvas _) implements Canvas {
     final double right = bolt ? _extendR : _totalR;
     const double blockTop = 48;
     drawRRect(
-      RRectRRect.fromLTRBAndCorners(0, blockTop, right, _totalB, topLeft: radius, bottomLeft: radius, bottomRight: radius),
+      RRect.fromLTRBAndCorners(0, blockTop, right, _totalB, topLeft: radius, bottomLeft: radius, bottomRight: radius),
       paint,
     );
     drawRRect(
-      RRectRRect.fromLTRBAndCorners(576, 0, right, blockTop + 1, topLeft: radius, topRight: radius),
+      RRect.fromLTRBAndCorners(576, 0, right, blockTop + 1, topLeft: radius, topRight: radius),
       paint,
     );
 
