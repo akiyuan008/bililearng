@@ -4,6 +4,7 @@
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/http/follow.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models_new/follow/data.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/pages/share/view.dart' show UserModel;
 import 'package:PiliPlus/utils/accounts.dart';
@@ -75,7 +76,7 @@ class _FollowSelectPageState extends State<FollowSelectPage> {
     final res = await FollowHttp.followings(vmid: mid, pn: 1, ps: 20);
     if (mounted) {
       setState(() {
-        if (res is Success) {
+        if (res is Success<FollowData>) {
           final data = res.response;
           _list = data?.list ?? [];
           _total = data?.total;
@@ -96,7 +97,7 @@ class _FollowSelectPageState extends State<FollowSelectPage> {
 
     if (mounted) {
       setState(() {
-        if (res is Success) {
+        if (res is Success<FollowData>) {
           final data = res.response;
           final newList = data?.list ?? [];
           // 去重(防止重复)
