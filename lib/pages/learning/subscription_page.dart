@@ -1,5 +1,6 @@
 // [PiliPlus Learning] 专注订阅极简瀑布流 UI
 // 从登录账号的关注列表选择 UP 主,无需手动输入 UID。
+// 支持两种添加方式:1)搜索关注列表单选 2)浏览全部关注列表多选
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/pages/follow_search/view.dart';
 import 'package:PiliPlus/pages/share/view.dart';
@@ -14,6 +15,7 @@ import 'package:get/get.dart';
 import 'package:waterfall_flow/waterfall_flow.dart';
 
 import 'feed_aggregator.dart';
+import 'follow_select_page.dart';
 import 'subscription_controller.dart';
 import 'white_list_repo.dart';
 
@@ -35,12 +37,17 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         title: const Text('专注订阅'),
         actions: [
           IconButton(
-            tooltip: '从关注列表添加',
-            icon: const Icon(Icons.person_add_outlined),
+            tooltip: '从关注列表多选',
+            icon: const Icon(Icons.people_alt_outlined),
+            onPressed: _addFromFollowListMulti,
+          ),
+          IconButton(
+            tooltip: '搜索添加',
+            icon: const Icon(Icons.person_search_outlined),
             onPressed: _addFromFollowList,
           ),
           IconButton(
-            tooltip: '搜索',
+            tooltip: '搜索视频',
             icon: const Icon(Icons.search),
             onPressed: () => Get.toNamed('/search'),
           ),
@@ -94,9 +101,15 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           ),
           const SizedBox(height: 16),
           FilledButton.tonalIcon(
+            onPressed: _addFromFollowListMulti,
+            icon: const Icon(Icons.people_alt_outlined),
+            label: const Text('从关注列表选择 UP 主'),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.tonalIcon(
             onPressed: _addFromFollowList,
-            icon: const Icon(Icons.person_add_outlined),
-            label: const Text('从关注列表添加 UP 主'),
+            icon: const Icon(Icons.person_search_outlined),
+            label: const Text('搜索关注列表添加'),
           ),
         ],
       ),
@@ -126,6 +139,31 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       ));
       await _ctr.refreshFeed();
       SmartDialog.showToast('已添加: ${userModel.name}');
+    }
+  }
+
+  /// 从关注列表多选页面批量添加 UP 主
+  void _addFromFollowListMulti() async {
+    if (!Accounts.main.isLogin) {
+      SmartDialog.showToast('请先登录 B站账号');
+      return;
+    }
+
+    final List<UserModel>? result = await Navigator.of(context)
+        .push<List<UserModel>>(GetPageRoute(page: () => const FollowSelectPage()));
+
+    if (result != null && result.isNotEmpty) {
+      int added = 0;
+      for (final user in result) {
+        await _ctr.addUp(UpInfo(
+          mid: user.mid.toString(),
+          name: user.name,
+          face: user.avatar,
+        ));
+        added++;
+      }
+      await _ctr.refreshFeed();
+      SmartDialog.showToast('已添加 $added 个UP主');
     }
   }
 
@@ -160,10 +198,10 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     TextButton.icon(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        _addFromFollowList();
+                        _addFromFollowListMulti();
                       },
-                      icon: const Icon(Icons.add),
-                      label: const Text('添加'),
+                      icon: const Icon(Icons.people_alt_outlined),
+                      label: const Text('多选添加'),
                     ),
                   ],
                 ),

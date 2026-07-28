@@ -87,12 +87,32 @@ class PeriodSummary {
   });
 }
 
+/// 打卡日历单日数据(用于热力图)
+class CalendarDay {
+  final DateTime date;
+  final int seconds;
+  final bool isCheckIn;
+  final bool isFuture;
+  final bool isToday;
+
+  const CalendarDay({
+    required this.date,
+    required this.seconds,
+    required this.isCheckIn,
+    required this.isFuture,
+    required this.isToday,
+  });
+}
+
 class StatsRepo {
   StatsRepo._();
 
   static const String _boxName = 'learningStats';
   static Box<dynamic>? _box;
   static bool _initializing = false;
+
+  /// 每日打卡目标时长(秒) — 60分钟,仿多邻国打卡制度
+  static const int dailyGoalSeconds = 3600;
 
   static Future<void> ensureInit() async {
     if (_box != null && _box!.isOpen) return;
@@ -189,6 +209,125 @@ class StatsRepo {
       date = date.subtract(const Duration(days: 1));
     }
     return streak;
+  }
+
+  // ======================== 多邻国式打卡制度 ========================
+  // 每日学习满 60 分钟才算"打卡成功",未满 60 分钟算"断卡"。
+
+  /// 判断指定日期是否打卡成功(学习时长 >= dailyGoalSeconds)
+  static bool isCheckIn(DateTime date) {
+    return getSeconds(date) >= dailyGoalSeconds;
+  }
+
+  /// 今日是否已打卡
+  static bool isTodayCheckedIn() => isCheckIn(DateTime.now());
+
+  /// 今日打卡进度(0.0 ~ 1.0)
+  static double getTodayProgress() {
+    final seconds = getTodaySeconds();
+    return (seconds / dailyGoalSeconds).clamp(0.0, 1.0);
+  }
+
+  /// 今日还需多少秒才能打卡
+  static int getTodayRemainingSeconds() {
+    final remaining = dailyGoalSeconds - getTodaySeconds();
+    return remaining > 0 ? remaining : 0;
+  }
+
+  /// 获取连续打卡天数(从今天往前数,连续满足60分钟的天数)
+  /// 如果今天还没打卡但昨天打卡了,则从昨天开始算(宽容设计)
+  static int getCheckInStreak() {
+    final now = DateTime.now();
+    var date = DateTime(now.year, now.month, now.day);
+    // 如果今天还没打卡,从昨天开始算
+    if (!isCheckIn(date)) {
+      date = date.subtract(const Duration(days: 1));
+    }
+    int streak = 0;
+    while (isCheckIn(date)) {
+      streak++;
+      date = date.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+
+  /// 获取总打卡天数(满足60分钟的天数)
+  static int getCheckInDays() {
+    int count = 0;
+    for (final key in _safeBox.keys) {
+      if (key is String && key.startsWith('d:')) {
+        if ((_safeBox.get(key, defaultValue: 0) as int) >= dailyGoalSeconds) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  /// 获取最近 N 周的打卡日历数据(用于热力图/GitHub式贡献图)
+  /// 返回按周分组的列表,每周7天(周日~周六),每天包含日期和是否打卡
+  static List<List<CalendarDay>> getCheckInCalendar(int weeks) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // 找到本周周日(日历起始)
+    final thisSunday = today.subtract(Duration(days: today.weekday % 7));
+    // 日历起始日 = thisSunday 往前推 weeks-1 周
+    final startDate = thisSunday.subtract(Duration(days: (weeks - 1) * 7));
+
+    final result = <List<CalendarDay>>[];
+    for (int w = 0; w < weeks; w++) {
+      final week = <CalendarDay>[];
+      for (int d = 0; d < 7; d++) {
+        final date = startDate.add(Duration(days: w * 7 + d));
+        final seconds = getSeconds(date);
+        week.add(CalendarDay(
+          date: date,
+          seconds: seconds,
+          isCheckIn: seconds >= dailyGoalSeconds,
+          isFuture: date.isAfter(today),
+          isToday: date == today,
+        ));
+      }
+      result.add(week);
+    }
+    return result;
+  }
+
+  /// 获取最长连续打卡天数(历史最高)
+  static int getMaxCheckInStreak() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // 从今天往前扫描所有有记录的日期
+    var date = today;
+    // 先跳到最早有记录的日期
+    DateTime? earliest;
+    for (final key in _safeBox.keys) {
+      if (key is String && key.startsWith('d:')) {
+        final dateStr = key.substring(2);
+        try {
+          final parts = dateStr.split('-');
+          final d = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+          if (earliest == null || d.isBefore(earliest)) {
+            earliest = d;
+          }
+        } catch (_) {}
+      }
+    }
+    if (earliest == null) return 0;
+
+    int maxStreak = 0;
+    int currentStreak = 0;
+    var scanDate = earliest;
+    while (!scanDate.isAfter(today)) {
+      if (isCheckIn(scanDate)) {
+        currentStreak++;
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+      } else {
+        currentStreak = 0;
+      }
+      scanDate = scanDate.add(const Duration(days: 1));
+    }
+    return maxStreak;
   }
 
   /// 获取总观看视频数
